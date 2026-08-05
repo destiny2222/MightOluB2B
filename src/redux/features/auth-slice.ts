@@ -101,7 +101,7 @@ const authSlice = createSlice({
     loadAuthFromStorage: (state) => {
       const token = B2BAPI.getStoredToken();
       const user = B2BAPI.getStoredUser();
-      
+
       if (token && user) {
         state.token = token;
         state.user = user;
@@ -110,7 +110,7 @@ const authSlice = createSlice({
         state.b2bStatus = user.kyc?.status || null;
       }
     },
-    
+
     // Logout
     logout: (state) => {
       B2BAPI.logoutB2B();
@@ -121,17 +121,17 @@ const authSlice = createSlice({
       state.currentView = 'personal';
       state.error = null;
     },
-    
+
     // Clear error
     clearError: (state) => {
       state.error = null;
     },
-    
+
     // Update user after KYC submission
     updateUserKYC: (state, action: PayloadAction<{ user: B2BAPI.User }>) => {
       state.user = action.payload.user;
       state.b2bStatus = action.payload.user.kyc?.status || null;
-      
+
       // Update localStorage
       const token = B2BAPI.getStoredToken();
       if (token) {
@@ -156,8 +156,8 @@ const authSlice = createSlice({
       })
       .addCase(registerB2BUser.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = typeof action.payload === 'string' 
-          ? action.payload 
+        state.error = typeof action.payload === 'string'
+          ? action.payload
           : JSON.stringify(action.payload);
       });
 
@@ -177,8 +177,8 @@ const authSlice = createSlice({
       })
       .addCase(loginB2BUser.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = typeof action.payload === 'string' 
-          ? action.payload 
+        state.error = typeof action.payload === 'string'
+          ? action.payload
           : JSON.stringify(action.payload);
       });
 
@@ -196,8 +196,8 @@ const authSlice = createSlice({
       })
       .addCase(fetchUserProfile.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = typeof action.payload === 'string' 
-          ? action.payload 
+        state.error = typeof action.payload === 'string'
+          ? action.payload
           : JSON.stringify(action.payload);
       });
 
@@ -214,8 +214,8 @@ const authSlice = createSlice({
       })
       .addCase(switchView.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = typeof action.payload === 'string' 
-          ? action.payload 
+        state.error = typeof action.payload === 'string'
+          ? action.payload
           : JSON.stringify(action.payload);
       });
   },
@@ -230,15 +230,15 @@ export const selectUser = (state: RootState) => state.authReducer.user;
 export const selectIsAuthenticated = (state: RootState) => state.authReducer.isAuthenticated;
 export const selectB2BStatus = (state: RootState) => state.authReducer.b2bStatus;
 export const selectCurrentView = (state: RootState) => state.authReducer.currentView;
-export const selectIsBusinessOwner = (state: RootState) => 
+export const selectIsBusinessOwner = (state: RootState) =>
   state.authReducer.user?.is_business_owner || false;
-export const selectHasB2BAccess = (state: RootState) => 
+export const selectHasB2BAccess = (state: RootState) =>
   state.authReducer.b2bStatus === 'approved';
 
 // KYC-related selectors
-export const selectHasKYC = (state: RootState) => 
+export const selectHasKYC = (state: RootState) =>
   state.authReducer.user?.kyc_id !== null && state.authReducer.user?.kyc_id !== undefined;
-export const selectKYCStatus = (state: RootState) => 
+export const selectKYCStatus = (state: RootState) =>
   state.authReducer.user?.kyc?.status || null;
 export const selectCanPurchase = (state: RootState) => {
   const user = state.authReducer.user;

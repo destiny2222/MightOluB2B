@@ -1,20 +1,60 @@
 import React from "react";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/redux/store";
+import { removeFromCartAsync } from "@/redux/features/cart-slice";
+import toast from "react-hot-toast";
 import Image from "next/image";
 
-const SingleItem = ({ item, removeItemFromCart }) => {
+const SingleItem = ({ item }) => {
   const dispatch = useDispatch<AppDispatch>();
 
-  const handleRemoveFromCart = () => {
-    dispatch(removeItemFromCart(item.id));
+  const handleRemoveFromCart = async () => {
+    try {
+      await dispatch(removeFromCartAsync({ id: item.id, cartItemId: item.cartItemId })).unwrap();
+      toast.success("Item removed from cart");
+    } catch (error: any) {
+      toast.error(error || "Failed to remove item");
+    }
   };
 
   return (
     <div className="flex items-center justify-between gap-5">
       <div className="w-full flex items-center gap-6">
         <div className="flex items-center justify-center rounded-[10px] bg-gray-3 max-w-[90px] w-full h-22.5">
-          <Image src={item.imgs?.thumbnails[0]} alt="product" width={100} height={100} unoptimized />
+          {item.imgs?.thumbnails?.[0] ? (
+            <Image 
+              src={item.imgs.thumbnails[0]} 
+              alt={item.title || "product"} 
+              width={100} 
+              height={100} 
+              unoptimized 
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-5">
+              <svg
+                width="40"
+                height="40"
+                viewBox="0 0 40 40"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M35 30C35 30.663 34.7366 31.2989 34.2678 31.7678C33.7989 32.2366 33.163 32.5 32.5 32.5H7.5C6.83696 32.5 6.20107 32.2366 5.73223 31.7678C5.26339 31.2989 5 30.663 5 30V10C5 9.33696 5.26339 8.70107 5.73223 8.23223C6.20107 7.76339 6.83696 7.5 7.5 7.5H12.5L15 5H25L27.5 7.5H32.5C33.163 7.5 33.7989 7.76339 34.2678 8.23223C34.7366 8.70107 35 9.33696 35 10V30Z"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M20 27.5C23.4518 27.5 26.25 24.7018 26.25 21.25C26.25 17.7982 23.4518 15 20 15C16.5482 15 13.75 17.7982 13.75 21.25C13.75 24.7018 16.5482 27.5 20 27.5Z"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+          )}
         </div>
 
         <div>

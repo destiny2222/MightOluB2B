@@ -38,8 +38,8 @@ const QuickViewModal = () => {
   };
 
   // add to cart with KYC check
-  const handleAddToCart = () => {
-    const success = addToCartWithKYCCheck({
+  const handleAddToCart = async () => {
+    const success = await addToCartWithKYCCheck({
       dispatch,
       item: product,
       quantity,

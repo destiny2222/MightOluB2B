@@ -15,7 +15,7 @@ const Breadcrumb = ({ title, pages }) => {
               <ol className="flex items-center space-x-1 sm:space-x-2 text-sm font-medium">
                 <li>
                   <Link href="/" className="text-gray-500 hover:text-dark transition-colors flex items-center gap-1.5">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
                     Home
                   </Link>
                 </li>
@@ -23,7 +23,7 @@ const Breadcrumb = ({ title, pages }) => {
                 {pages.length > 0 &&
                   pages.map((page, key) => (
                     <li className="flex items-center" key={key}>
-                      <svg className="w-4 h-4 text-gray-400 mx-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg>
+                      <svg className="w-4 h-4 text-gray-400 mx-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                       {key === pages.length - 1 ? (
                         <span className="text-[#418729] capitalize ml-1 cursor-default">{page}</span>
                       ) : (

@@ -25,44 +25,49 @@ const Cart = () => {
               <button className="text-blue">Clear Shopping Cart</button>
             </div>
 
-            <div className="bg-white rounded-[10px] shadow-1">
-              <div className="w-full overflow-x-auto">
-                <div className="min-w-[1170px]">
-                  {/* <!-- table header --> */}
-                  <div className="flex items-center py-5.5 px-7.5">
-                    <div className="min-w-[400px]">
-                      <p className="text-dark">Product</p>
-                    </div>
+            <div className="flex flex-col lg:flex-row gap-7.5 xl:gap-11">
+              {/* Cart Items Section */}
+              <div className="w-full lg:w-[65%]">
+                <div className="bg-white rounded-[10px] shadow-1">
+                  <div className="w-full overflow-x-auto">
+                    <div className="min-w-[750px]">
+                      {/* <!-- table header --> */}
+                      <div className="flex items-center py-5.5 px-7.5">
+                        <div className="min-w-[250px]">
+                          <p className="text-dark">Product</p>
+                        </div>
 
-                    <div className="min-w-[180px]">
-                      <p className="text-dark">Price</p>
-                    </div>
+                        <div className="min-w-[120px]">
+                          <p className="text-dark">Price</p>
+                        </div>
 
-                    <div className="min-w-[275px]">
-                      <p className="text-dark">Quantity</p>
-                    </div>
+                        <div className="min-w-[180px]">
+                          <p className="text-dark">Quantity</p>
+                        </div>
 
-                    <div className="min-w-[200px]">
-                      <p className="text-dark">Subtotal</p>
-                    </div>
+                        <div className="min-w-[120px]">
+                          <p className="text-dark">Subtotal</p>
+                        </div>
 
-                    <div className="min-w-[50px]">
-                      <p className="text-dark text-right">Action</p>
+                        <div className="min-w-[50px]">
+                          <p className="text-dark text-right">Action</p>
+                        </div>
+                      </div>
+
+                      {/* <!-- cart item --> */}
+                      {cartItems.length > 0 &&
+                        cartItems.map((item, key) => (
+                          <SingleItem item={item} key={key} />
+                        ))}
                     </div>
                   </div>
-
-                  {/* <!-- cart item --> */}
-                  {cartItems.length > 0 &&
-                    cartItems.map((item, key) => (
-                      <SingleItem item={item} key={key} />
-                    ))}
                 </div>
               </div>
-            </div>
 
-            <div className="flex flex-col lg:flex-row gap-7.5 xl:gap-11 mt-9">
-              <Discount />
-              <OrderSummary />
+              {/* Order Summary Section */}
+              <div className="w-full lg:w-[35%]">
+                <OrderSummary />
+              </div>
             </div>
           </div>
         </section>

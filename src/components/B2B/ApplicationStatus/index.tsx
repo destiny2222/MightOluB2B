@@ -6,26 +6,74 @@ import { useSelector, useDispatch } from "react-redux";
 import { selectAuth, fetchUserProfile } from "@/redux/features/auth-slice";
 import { useRouter } from "next/navigation";
 import { AppDispatch } from "@/redux/store";
+import PreLoader from "@/components/Common/PreLoader";
 
 const ApplicationStatus = () => {
   const { user, isAuthenticated, isLoading } = useSelector(selectAuth);
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const [isRefreshing, setIsRefreshing] = useState(true);
+  const [hasFetched, setHasFetched] = useState(false);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/b2b/login");
-    } else {
-      // Fetch the latest profile to ensure KYC status is up-to-date
-      dispatch(fetchUserProfile()).finally(() => {
-        setIsRefreshing(false);
-      });
-    }
-  }, [isAuthenticated, router, dispatch]);
+    // Don't redirect if still loading auth state
+    if (isLoading) return;
 
-  if (!user?.kyc) {
+    if (!isAuthenticated) {
+      router.replace("/b2b/login");
+      return;
+    }
+
+    // Only fetch once
+    if (hasFetched) return;
+
+    // Fetch the latest profile to ensure KYC status is up-to-date
+    const loadProfile = async () => {
+      try {
+        await dispatch(fetchUserProfile()).unwrap();
+        setHasFetched(true);
+      } catch (error) {
+        console.error("Failed to fetch profile:", error);
+      } finally {
+        setIsRefreshing(false);
+      }
+    };
+
+    loadProfile();
+  }, [isAuthenticated, isLoading, dispatch, router, hasFetched]);
+
+  // Show loading spinner while refreshing or auth is loading
+  if (isLoading || isRefreshing) {
+    return (
+      <PreLoader />
+    );
+  }
+
+  // If not authenticated after loading, return null (useEffect will redirect)
+  if (!user) {
     return null;
+  }
+
+  // If no KYC data found, show a message
+  if (!user.kyc) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-2">
+        <div className="text-center max-w-md mx-auto p-8 bg-white rounded-xl shadow-1">
+          <h2 className="text-2xl font-semibold text-dark mb-4">
+            No KYC Application Found
+          </h2>
+          <p className="text-gray-5 mb-6">
+            You haven't submitted a KYC application yet. Please complete the KYC process to access B2B features.
+          </p>
+          <Link
+            href="/b2b/kyc-setup"
+            className="inline-block bg-blue text-white px-6 py-3 rounded-lg font-medium hover:bg-dark transition-colors"
+          >
+            Complete KYC
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   const { kyc } = user;
@@ -60,7 +108,8 @@ const ApplicationStatus = () => {
     },
   };
 
-  const config = statusConfig[kyc.status];
+  // Fallback to pending if status is unknown
+  const config = statusConfig[kyc.status] ?? statusConfig.pending;
 
   return (
     <>

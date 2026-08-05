@@ -28,11 +28,11 @@ const ProductItem = ({ item }: { item: Product }) => {
   };
 
   // add to cart with KYC check
-  const handleAddToCart = () => {
-    addToCartWithKYCCheck({
+  const handleAddToCart = async () => {
+    await addToCartWithKYCCheck({
       dispatch,
       item,
-      quantity: 1,
+      quantity: item.minimum_order_quantity || 1,
       kycCheck: { isAuthenticated, canPurchase, kycStatus, router }
     });
   };
@@ -42,19 +42,21 @@ const ProductItem = ({ item }: { item: Product }) => {
       addItemToWishlist({
         ...item,
         status: "available",
-        quantity: 1,
+        quantity: item.minimum_order_quantity || 1,
       })
     );
   };
 
-  const handleProductDetails = () => {
+  const handleProductDetails = () => { 
     dispatch(updateproductDetails({ ...item }));
   };
 
   return (
     <div className="group">
       <div className="relative overflow-hidden flex items-center justify-center rounded-lg bg-[#F6F7FB] min-h-[270px] mb-4">
-        <Image src={item.imgs.previews[0]} alt="" width={250} height={250} unoptimized />
+        <Link href="/shop-details" onClick={() => handleProductDetails()}>
+          <Image src={item.imgs.previews[0]} alt="" width={250} height={250} unoptimized />
+        </Link>
 
         <div className="absolute left-0 bottom-0 translate-y-full w-full flex items-center justify-center gap-2.5 pb-5 ease-linear duration-200 group-hover:translate-y-0">
           <button
@@ -122,39 +124,6 @@ const ProductItem = ({ item }: { item: Product }) => {
       </div>
 
       <div className="flex items-center gap-2.5 mb-2">
-        <div className="flex items-center gap-1">
-          <Image
-            src="/images/icons/icon-star.svg"
-            alt="star icon"
-            width={14}
-            height={14}
-          />
-          <Image
-            src="/images/icons/icon-star.svg"
-            alt="star icon"
-            width={14}
-            height={14}
-          />
-          <Image
-            src="/images/icons/icon-star.svg"
-            alt="star icon"
-            width={14}
-            height={14}
-          />
-          <Image
-            src="/images/icons/icon-star.svg"
-            alt="star icon"
-            width={14}
-            height={14}
-          />
-          <Image
-            src="/images/icons/icon-star.svg"
-            alt="star icon"
-            width={14}
-            height={14}
-          />
-        </div>
-
         <p className="text-custom-sm">({item.reviews})</p>
       </div>
 

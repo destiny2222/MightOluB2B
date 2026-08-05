@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { AppDispatch } from "@/redux/store";
 import { useDispatch } from "react-redux";
 import {
-  removeItemFromCart,
-  updateCartItemQuantity,
+  removeFromCartAsync,
+  updateQuantityAsync,
 } from "@/redux/features/cart-slice";
 
 import Image from "next/image";
@@ -13,31 +13,66 @@ const SingleItem = ({ item }) => {
 
   const dispatch = useDispatch<AppDispatch>();
 
+  console.log("SingleItem item:", item); // Debugging line
+
   const handleRemoveFromCart = () => {
-    dispatch(removeItemFromCart(item.id));
+    dispatch(removeFromCartAsync({ id: item.id, cartItemId: item.cartItemId }));
   };
 
   const handleIncreaseQuantity = () => {
     setQuantity(quantity + 1);
-    dispatch(updateCartItemQuantity({ id: item.id, quantity: quantity + 1 }));
+    dispatch(updateQuantityAsync({ id: item.id, quantity: quantity + 1, cartItemId: item.cartItemId }));
   };
 
   const handleDecreaseQuantity = () => {
     if (quantity > 1) {
       setQuantity(quantity - 1);
-      dispatch(updateCartItemQuantity({ id: item.id, quantity: quantity - 1 }));
+      dispatch(updateQuantityAsync({ id: item.id, quantity: quantity - 1, cartItemId: item.cartItemId }));
     } else {
       return;
     }
   };
 
   return (
-    <div className="flex items-center border-t border-gray-3 py-5 px-7.5">
-      <div className="min-w-[400px]">
+    <div className="flex items-center border-t border-gray-3 py-5 px-8">
+      <div className="min-w-[250px]">
         <div className="flex items-center justify-between gap-5">
           <div className="w-full flex items-center gap-5.5">
             <div className="flex items-center justify-center rounded-[5px] bg-gray-2 max-w-[80px] w-full h-17.5">
-              <Image width={200} height={200} src={item.imgs?.thumbnails[0]} alt="product" unoptimized />
+              {item.imgs?.thumbnails ? (
+                <Image 
+                  width={200} 
+                  height={200} 
+                  src={typeof item.imgs.thumbnails === 'string' ? item.imgs.thumbnails : item.imgs.thumbnails[0]} 
+                  alt={item.title || "product"} 
+                  unoptimized 
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-5">
+                  <svg
+                    width="40"
+                    height="40"
+                    viewBox="0 0 40 40"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M35 30C35 30.663 34.7366 31.2989 34.2678 31.7678C33.7989 32.2366 33.163 32.5 32.5 32.5H7.5C6.83696 32.5 6.20107 32.2366 5.73223 31.7678C5.26339 31.2989 5 30.663 5 30V10C5 9.33696 5.26339 8.70107 5.73223 8.23223C6.20107 7.76339 6.83696 7.5 7.5 7.5H12.5L15 5H25L27.5 7.5H32.5C33.163 7.5 33.7989 7.76339 34.2678 8.23223C34.7366 8.70107 35 9.33696 35 10V30Z"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M20 27.5C23.4518 27.5 26.25 24.7018 26.25 21.25C26.25 17.7982 23.4518 15 20 15C16.5482 15 13.75 17.7982 13.75 21.25C13.75 24.7018 16.5482 27.5 20 27.5Z"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+              )}
             </div>
 
             <div>
@@ -49,11 +84,11 @@ const SingleItem = ({ item }) => {
         </div>
       </div>
 
-      <div className="min-w-[180px]">
+      <div className="min-w-[120px]">
         <p className="text-dark">${item.discountedPrice}</p>
       </div>
 
-      <div className="min-w-[275px]">
+      <div className="min-w-[180px]">
         <div className="w-max flex items-center rounded-md border border-gray-3">
           <button
             onClick={() => handleDecreaseQuantity()}
@@ -105,7 +140,7 @@ const SingleItem = ({ item }) => {
         </div>
       </div>
 
-      <div className="min-w-[200px]">
+      <div className="min-w-[120px]">
         <p className="text-dark">${item.discountedPrice * quantity}</p>
       </div>
 

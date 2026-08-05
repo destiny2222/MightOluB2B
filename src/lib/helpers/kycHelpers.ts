@@ -1,5 +1,5 @@
 import { AppDispatch } from "@/redux/store";
-import { addItemToCart } from "@/redux/features/cart-slice";
+import { addToCartAsync } from "@/redux/features/cart-slice";
 import toast from "react-hot-toast";
 import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
@@ -22,12 +22,12 @@ interface AddToCartParams {
 /**
  * Helper function to add items to cart with KYC verification
  */
-export const addToCartWithKYCCheck = ({
+export const addToCartWithKYCCheck = async ({
   dispatch,
   item,
   quantity,
   kycCheck
-}: AddToCartParams): boolean => {
+}: AddToCartParams): Promise<boolean> => {
   const { isAuthenticated, canPurchase, kycStatus, router } = kycCheck;
 
   if (!isAuthenticated) {
@@ -53,14 +53,19 @@ export const addToCartWithKYCCheck = ({
     return false;
   }
 
-  dispatch(
-    addItemToCart({
-      ...item,
-      quantity,
-    })
-  );
-  toast.success("Item added to cart");
-  return true;
+  try {
+    await dispatch(
+      addToCartAsync({
+        ...item,
+        quantity,
+      })
+    ).unwrap();
+    toast.success("Item added to cart");
+    return true;
+  } catch (error: any) {
+    toast.error(error || "Failed to add item to cart");
+    return false;
+  }
 };
 
 /**

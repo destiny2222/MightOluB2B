@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 
-const CategoryItem = ({ category }) => {
-  const [selected, setSelected] = useState(false);
+const CategoryItem = ({ category, onToggle }) => {
+  const selected = category.isRefined;
   return (
     <button
       className={`${
         selected && "text-blue"
       } group flex items-center justify-between ease-out duration-200 hover:text-blue `}
-      onClick={() => setSelected(!selected)}
+      onClick={() => onToggle(category.name)}
     >
       <div className="flex items-center gap-2">
         <div
@@ -49,7 +49,7 @@ const CategoryItem = ({ category }) => {
   );
 };
 
-const CategoryDropdown = ({ categories }) => {
+const CategoryDropdown = ({ categories, onToggle }) => {
   const [toggleDropdown, setToggleDropdown] = useState(true);
 
   return (
@@ -96,7 +96,7 @@ const CategoryDropdown = ({ categories }) => {
         }`}
       >
         {categories.map((category, key) => (
-          <CategoryItem key={key} category={category} />
+          <CategoryItem key={key} category={category} onToggle={onToggle} />
         ))}
       </div>
     </div>

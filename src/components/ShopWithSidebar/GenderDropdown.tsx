@@ -1,14 +1,13 @@
 "use client";
 import React, { useState } from "react";
 
-const GenderItem = ({ category }) => {
-  const [selected, setSelected] = useState(false);
+const GenderItem = ({ category, onToggle, selected }) => {
   return (
     <button
       className={`${
         selected && "text-blue"
       } group flex items-center justify-between ease-out duration-200 hover:text-blue `}
-      onClick={() => setSelected(!selected)}
+      onClick={() => onToggle(category.name)}
     >
       <div className="flex items-center gap-2">
         <div
@@ -48,7 +47,7 @@ const GenderItem = ({ category }) => {
   );
 };
 
-const GenderDropdown = ({ genders }) => {
+const GenderDropdown = ({ genders, onToggle, selectedGenders }) => {
   const [toggleDropdown, setToggleDropdown] = useState(true);
 
   return (
@@ -92,7 +91,12 @@ const GenderDropdown = ({ genders }) => {
         }`}
       >
         {genders.map((gender, key) => (
-          <GenderItem key={key} category={gender} />
+          <GenderItem 
+            key={key} 
+            category={gender} 
+            onToggle={onToggle}
+            selected={selectedGenders?.includes(gender.name)}
+          />
         ))}
       </div>
     </div>

@@ -5,7 +5,7 @@ import { menuData } from "./menuData";
 import Dropdown from "./Dropdown";
 import { useAppSelector, useAppDispatch } from "@/redux/store";
 import { useSelector } from "react-redux";
-import { selectTotalPrice } from "@/redux/features/cart-slice";
+import { selectTotalPrice, clearCart } from "@/redux/features/cart-slice";
 import { useCartModalContext } from "@/app/context/CartSidebarModalContext";
 import { 
   selectAuth, 
@@ -57,6 +57,7 @@ const Header = () => {
   
   const handleLogout = () => {
     dispatch(logout());
+    dispatch(clearCart());
     setUserMenuOpen(false);
     toast.success("Logged out successfully");
   };
@@ -253,6 +254,27 @@ const Header = () => {
                             className="block px-4 py-2 text-sm hover:bg-gray-1 transition-colors"
                           >
                             Business Profile
+                          </Link>
+                          <Link
+                            href="/b2b/rfq/history"
+                            onClick={() => setUserMenuOpen(false)}
+                            className="block px-4 py-2 text-sm hover:bg-gray-1 transition-colors"
+                          >
+                            RFQ History
+                          </Link>
+                          <Link
+                            href="/b2b/orders"
+                            onClick={() => setUserMenuOpen(false)}
+                            className="block px-4 py-2 text-sm hover:bg-gray-1 transition-colors"
+                          >
+                            Order History
+                          </Link>
+                          <Link
+                            href="/b2b/orders/drafts"
+                            onClick={() => setUserMenuOpen(false)}
+                            className="block px-4 py-2 text-sm hover:bg-gray-1 transition-colors"
+                          >
+                            Recurring Drafts
                           </Link>
                           <button
                             onClick={handleSwitchView}

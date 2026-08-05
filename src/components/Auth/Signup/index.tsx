@@ -1,321 +1,317 @@
 "use client";
-import Breadcrumb from "@/components/Common/Breadcrumb";
+
 import Link from "next/link";
-import React, { useState, useEffect } from "react";
-import { useAppDispatch } from "@/redux/store";
-import { useSelector } from "react-redux";
-import { registerB2BUser, selectAuth, clearError } from "@/redux/features/auth-slice";
+import React from "react";
 import { useRouter } from "next/navigation";
+import { z } from "zod";
+import { useForm } from "@tanstack/react-form";
+import { zodValidator } from "@tanstack/zod-form-adapter";
 import toast from "react-hot-toast";
+
+import { useAppDispatch } from "@/redux/store";
+import { registerB2BUser } from "@/redux/features/auth-slice";
+
+const signupSchema = z
+  .object({
+    name: z.string().min(1, "Name is required"),
+    email: z.string().email("Invalid email address"),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters"),
+    password_confirmation: z.string(),
+  })
+  .refine((data) => data.password === data.password_confirmation, {
+    message: "Passwords do not match",
+    path: ["password_confirmation"],
+  });
 
 const Signup = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const { isLoading, error, isAuthenticated, user } = useSelector(selectAuth);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    password_confirmation: "",
-  });
-  const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({});
+  const form = useForm({
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      password_confirmation: "",
+    },
 
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      toast.success("Account created successfully!");
-      // Redirect to KYC setup after registration
-      router.push("/b2b/kyc-setup");
-    }
-  }, [isAuthenticated, user, router]);
+    validatorAdapter: zodValidator(),
 
-  // Handle errors
-  useEffect(() => {
-    if (error) {
+    validators: {
+      onBlur: signupSchema,
+      onSubmit: signupSchema,
+    },
+
+    onSubmit: async ({ value }) => {
       try {
-        const errorObj = JSON.parse(error);
-        if (typeof errorObj === 'object' && errorObj !== null) {
-          setValidationErrors(errorObj);
-          toast.error("Please fix the validation errors");
-        } else {
-          toast.error(error);
-        }
-      } catch {
-        toast.error(error || "Registration failed. Please try again.");
+        await dispatch(registerB2BUser(value)).unwrap();
+
+        toast.success("Account created successfully!");
+
+        setTimeout(() => {
+          router.push("/b2b/kyc-setup");
+        }, 2000);
+      } catch (error: any) {
+        toast.error(
+          error?.message ||
+            error?.payload?.message ||
+            "Unable to create account."
+        );
       }
-      dispatch(clearError());
-    }
-  }, [error, dispatch]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    
-    if (validationErrors[name]) {
-      setValidationErrors(prev => {
-        const updated = { ...prev };
-        delete updated[name];
-        return updated;
-      });
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setValidationErrors({});
-
-    // Client-side validation
-    const errors: Record<string, string[]> = {};
-    
-    if (!formData.name.trim()) {
-      errors.name = ["Full name is required"];
-    } else if (formData.name.trim().length < 2) {
-      errors.name = ["Full name must be at least 2 characters"];
-    }
-    
-    if (!formData.email.trim()) {
-      errors.email = ["Email is required"];
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      errors.email = ["Please enter a valid email address"];
-    }
-    
-    if (!formData.password) {
-      errors.password = ["Password is required"];
-    } else if (formData.password.length < 8) {
-      errors.password = ["Password must be at least 8 characters"];
-    }
-
-    if (!formData.password_confirmation) {
-      errors.password_confirmation = ["Please confirm your password"];
-    } else if (formData.password !== formData.password_confirmation) {
-      errors.password_confirmation = ["Passwords do not match"];
-    }
-
-    if (Object.keys(errors).length > 0) {
-      setValidationErrors(errors);
-      toast.error("Please fix the validation errors");
-      return;
-    }
-
-    dispatch(registerB2BUser(formData));
-  };
+    },
+  });
 
   return (
-    <>
-      <Breadcrumb title={"Sign Up"} pages={["Sign Up"]} />
-      <section className="overflow-hidden py-20 bg-gray-2">
-        <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
-          <div className="max-w-[570px] w-full mx-auto rounded-xl bg-white shadow-1 p-4 sm:p-7.5 xl:p-11">
-            
-            <div className="text-center mb-11">
-              <h2 className="font-semibold text-xl sm:text-2xl xl:text-heading-5 text-dark mb-1.5">
-                Create B2B Trade Account
-              </h2>
-              <p className="text-gray-5">
-                Register for wholesale pricing and bulk orders
-              </p>
+    <section className="overflow-hidden py-20 pt-64 bg-gray-2">
+      <div className="max-w-[1170px] mx-auto px-4 sm:px-8 xl:px-0">
+        <div className="max-w-[570px] mx-auto rounded-xl bg-white shadow-1 p-4 sm:p-7.5 xl:p-11">
+          <div className="text-center mb-11">
+            <h2 className="font-semibold text-xl sm:text-2xl xl:text-heading-5 text-dark mb-1.5">
+              Create B2B Trade Account
+            </h2>
+
+            <p className="text-gray-5">
+              Register for wholesale pricing and bulk orders
+            </p>
+          </div>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              form.handleSubmit();
+            }}
+          >
+            {/* NAME */}
+            <div className="mb-5">
+              <label
+                htmlFor="name"
+                className="block mb-2.5 font-medium"
+              >
+                Full Name <span className="text-red">*</span>
+              </label>
+
+              <form.Field name="name">
+                {(field) => (
+                  <>
+                    <input
+                      name={field.name}
+                      id={field.name}
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      onBlur={field.handleBlur}
+                      placeholder="Full Name"
+                      className={`rounded-lg border w-full py-3 px-5 ${
+                        field.state.meta.isTouched &&
+                        field.state.meta.errors.length
+                          ? "border-red"
+                          : "border-gray-300"
+                      }`}
+                    />
+
+                    {field.state.meta.isTouched &&
+                      field.state.meta.errors.length > 0 && (
+                        <p className="text-red text-sm mt-1">
+                          {field.state.meta.errors[0]?.message}
+                        </p>
+                      )}
+                  </>
+                )}
+              </form.Field>
             </div>
 
-            <div className="flex flex-col gap-4.5">
-              <button type="button" className="flex justify-center items-center gap-3.5 rounded-lg border border-gray-3 bg-gray-1 p-3 ease-out duration-200 hover:bg-gray-2">
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <g clipPath="url(#clip0_98_7461)">
-                    <mask
-                      id="mask0_98_7461"
-                      maskUnits="userSpaceOnUse"
-                      x="0"
-                      y="0"
-                      width="20"
-                      height="20"
-                    >
-                      <path d="M20 0H0V20H20V0Z" fill="white" />
-                    </mask>
-                    <g mask="url(#mask0_98_7461)">
-                      <path
-                        d="M19.999 10.2218C20.0111 9.53429 19.9387 8.84791 19.7834 8.17737H10.2031V11.8884H15.8267C15.7201 12.5391 15.4804 13.162 15.1219 13.7195C14.7634 14.2771 14.2935 14.7578 13.7405 15.1328L13.7209 15.2571L16.7502 17.5568L16.96 17.5774C18.8873 15.8329 19.999 13.2661 19.999 10.2218Z"
-                        fill="#4285F4"
-                      />
-                      <path
-                        d="M10.2036 20C12.9586 20 15.2715 19.1111 16.9609 17.5777L13.7409 15.1332C12.8793 15.7223 11.7229 16.1333 10.2036 16.1333C8.91317 16.126 7.65795 15.7206 6.61596 14.9746C5.57397 14.2287 4.79811 13.1802 4.39848 11.9777L4.2789 11.9877L1.12906 14.3766L1.08789 14.4888C1.93622 16.1457 3.23812 17.5386 4.84801 18.512C6.45791 19.4852 8.31194 20.0005 10.2036 20Z"
-                        fill="#34A853"
-                      />
-                      <path
-                        d="M4.39899 11.9776C4.1758 11.3411 4.06063 10.673 4.05807 9.9999C4.06218 9.3279 4.1731 8.66067 4.38684 8.02221L4.38115 7.88959L1.1927 5.46234L1.0884 5.51095C0.372762 6.90337 0 8.44075 0 9.99983C0 11.5589 0.372762 13.0962 1.0884 14.4887L4.39899 11.9776Z"
-                        fill="#FBBC05"
-                      />
-                      <path
-                        d="M10.2039 3.86663C11.6661 3.84438 13.0802 4.37803 14.1495 5.35558L17.0294 2.59997C15.1823 0.90185 12.7364 -0.0298855 10.2039 -3.67839e-05C8.31239 -0.000477835 6.45795 0.514733 4.84805 1.48799C3.23816 2.46123 1.93624 3.85417 1.08789 5.51101L4.38751 8.02225C4.79107 6.82005 5.5695 5.77231 6.61303 5.02675C7.65655 4.28119 8.91254 3.87541 10.2039 3.86663Z"
-                        fill="#EB4335"
-                      />
-                    </g>
-                  </g>
-                  <defs>
-                    <clipPath id="clip0_98_7461">
-                      <rect width="20" height="20" fill="white" />
-                    </clipPath>
-                  </defs>
-                </svg>
-                Sign Up with Google
-              </button>
+            {/* EMAIL */}
+            <div className="mb-5">
+              <label
+                htmlFor="email"
+                className="block mb-2.5 font-medium"
+              >
+                Email Address <span className="text-red">*</span>
+              </label>
 
-              <button type="button" className="flex justify-center items-center gap-3.5 rounded-lg border border-gray-3 bg-gray-1 p-3 ease-out duration-200 hover:bg-gray-2">
-                <svg
-                  width="22"
-                  height="22"
-                  viewBox="0 0 22 22"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M10.9997 1.83331C5.93773 1.83331 1.83301 6.04119 1.83301 11.232C1.83301 15.3847 4.45954 18.9077 8.10178 20.1505C8.55988 20.2375 8.72811 19.9466 8.72811 19.6983C8.72811 19.4743 8.71956 18.7338 8.71567 17.9485C6.16541 18.517 5.6273 16.8395 5.6273 16.8395C5.21032 15.7532 4.60951 15.4644 4.60951 15.4644C3.77785 14.8811 4.6722 14.893 4.6722 14.893C5.59272 14.9593 6.07742 15.8615 6.07742 15.8615C6.89499 17.2984 8.22184 16.883 8.74493 16.6429C8.82718 16.0353 9.06478 15.6208 9.32694 15.3861C7.2909 15.1484 5.15051 14.3425 5.15051 10.7412C5.15051 9.71509 5.5086 8.87661 6.09503 8.21844C5.99984 7.98167 5.68611 7.02577 6.18382 5.73115C6.18382 5.73115 6.95358 5.47855 8.70532 6.69458C9.43648 6.48627 10.2207 6.3819 10.9997 6.37836C11.7787 6.3819 12.5635 6.48627 13.2961 6.69458C15.0457 5.47855 15.8145 5.73115 15.8145 5.73115C16.3134 7.02577 15.9995 7.98167 15.9043 8.21844C16.4921 8.87661 16.8477 9.715 16.8477 10.7412C16.8477 14.351 14.7033 15.146 12.662 15.3786C12.9909 15.6702 13.2838 16.2423 13.2838 17.1191C13.2838 18.3766 13.2732 19.3888 13.2732 19.6983C13.2732 19.9485 13.4382 20.2415 13.9028 20.1492C17.5431 18.905 20.1663 15.3833 20.1663 11.232C20.1663 6.04119 16.0621 1.83331 10.9997 1.83331Z"
-                    fill="#15171A"
-                  />
-                </svg>
-                Sign Up with Github
-              </button>
+              <form.Field name="email">
+                {(field) => (
+                  <>
+                    <input
+                      id={field.name}
+                      name={field.name}
+                      type="email"
+                      value={field.state.value}
+                      onChange={(e) =>
+                        field.handleChange(e.target.value)
+                      }
+                      onBlur={field.handleBlur}
+                      placeholder="Business email address"
+                      className={`rounded-lg border w-full py-3 px-5 ${
+                        field.state.meta.isTouched &&
+                        field.state.meta.errors.length
+                          ? "border-red"
+                          : "border-gray-300"
+                      }`}
+                    />
+
+                    {field.state.meta.isTouched &&
+                      field.state.meta.errors.length > 0 && (
+                        <p className="text-red text-sm mt-1">
+                          {field.state.meta.errors[0]?.message}
+                        </p>
+                      )}
+                  </>
+                )}
+              </form.Field>
             </div>
 
-            <span className="relative z-1 block font-medium text-center mt-4.5">
-              <span className="block absolute -z-1 left-0 top-1/2 h-px w-full bg-gray-3"></span>
-              <span className="inline-block px-3 bg-white">Or</span>
-            </span>
+            {/* PASSWORD */}
+            <div className="mb-5">
+              <label
+                htmlFor="password"
+                className="block mb-2.5 font-medium"
+              >
+                Password <span className="text-red">*</span>
+              </label>
 
-            <div className="mt-5.5">
-              <form onSubmit={handleSubmit}>
-                <div className="mb-5">
-                  <label htmlFor="name" className="block mb-2.5 font-medium">
-                    Full Name <span className="text-red">*</span>
-                  </label>
+              <form.Field name="password">
+                {(field) => (
+                  <>
+                    <input
+                      id={field.name}
+                      name={field.name}
+                      type="password"
+                      value={field.state.value}
+                      onChange={(e) =>
+                        field.handleChange(e.target.value)
+                      }
+                      onBlur={field.handleBlur}
+                      autoComplete="new-password"
+                      placeholder="Enter your password (min. 8 characters)"
+                      className={`rounded-lg border w-full py-3 px-5 ${
+                        field.state.meta.isTouched &&
+                        field.state.meta.errors.length
+                          ? "border-red"
+                          : "border-gray-300"
+                      }`}
+                    />
 
-                  <input
-                    type="text"
-                    name="name"
-                    id="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    placeholder="Contact person full name"
-                    className={`rounded-lg border ${
-                      validationErrors.name ? 'border-red' : 'border-gray-3'
-                    } bg-gray-1 placeholder:text-dark-5 w-full py-3 px-5 outline-none duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blue/20`}
-                  />
-                  {validationErrors.name && (
-                    <p className="text-red text-sm mt-1">{validationErrors.name[0]}</p>
-                  )}
-                </div>
+                    {field.state.meta.isTouched &&
+                      field.state.meta.errors.length > 0 && (
+                        <p className="text-red text-sm mt-1">
+                          {field.state.meta.errors[0]?.message}
+                        </p>
+                      )}
+                  </>
+                )}
+              </form.Field>
+            </div>
 
-                <div className="mb-5">
-                  <label htmlFor="email" className="block mb-2.5 font-medium">
-                    Email Address <span className="text-red">*</span>
-                  </label>
+            {/* CONFIRM PASSWORD */}
+            <div className="mb-5">
+              <label
+                htmlFor="password_confirmation"
+                className="block mb-2.5 font-medium"
+              >
+                Confirm Password <span className="text-red">*</span>
+              </label>
 
-                  <input
-                    type="email"
-                    name="email"
-                    id="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="Business email address"
-                    className={`rounded-lg border ${
-                      validationErrors.email ? 'border-red' : 'border-gray-3'
-                    } bg-gray-1 placeholder:text-dark-5 w-full py-3 px-5 outline-none duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blue/20`}
-                  />
-                  {validationErrors.email && (
-                    <p className="text-red text-sm mt-1">{validationErrors.email[0]}</p>
-                  )}
-                </div>
+              <form.Field name="password_confirmation">
+                {(field) => (
+                  <>
+                    <input
+                      id={field.name}
+                      name={field.name}
+                      type="password"
+                      value={field.state.value}
+                      onChange={(e) =>
+                        field.handleChange(e.target.value)
+                      }
+                      onBlur={field.handleBlur}
+                      autoComplete="new-password"
+                      placeholder="Confirm password"
+                      className={`rounded-lg border w-full py-3 px-5 ${
+                        field.state.meta.isTouched &&
+                        field.state.meta.errors.length
+                          ? "border-red"
+                          : "border-gray-300"
+                      }`}
+                    />
 
-                <div className="mb-5">
-                  <label htmlFor="password" className="block mb-2.5 font-medium">
-                    Password <span className="text-red">*</span>
-                  </label>
+                    {field.state.meta.isTouched &&
+                      field.state.meta.errors.length > 0 && (
+                        <p className="text-red text-sm mt-1">
+                          {field.state.meta.errors[0]?.message}
+                        </p>
+                      )}
+                  </>
+                )}
+              </form.Field>
+            </div>
 
-                  <input
-                    type="password"
-                    name="password"
-                    id="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    placeholder="Enter your password (min. 8 characters)"
-                    autoComplete="new-password"
-                    className={`rounded-lg border ${
-                      validationErrors.password ? 'border-red' : 'border-gray-3'
-                    } bg-gray-1 placeholder:text-dark-5 w-full py-3 px-5 outline-none duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blue/20`}
-                  />
-                  {validationErrors.password && (
-                    <p className="text-red text-sm mt-1">{validationErrors.password[0]}</p>
-                  )}
-                </div>
+            <div className="mb-6 p-4 bg-blue/5 border border-blue/10 rounded-lg">
+              <p className="text-sm text-dark-5">
+                <span className="font-medium">
+                  Note:
+                </span>{" "}
+                After registration you'll need to complete your
+                business verification (KYC) before accessing
+                wholesale pricing.
+              </p> 
+            </div>
 
-                <div className="mb-5.5">
-                  <label htmlFor="password_confirmation" className="block mb-2.5 font-medium">
-                    Confirm Password <span className="text-red">*</span>
-                  </label>
-
-                  <input
-                    type="password"
-                    name="password_confirmation"
-                    id="password_confirmation"
-                    value={formData.password_confirmation}
-                    onChange={handleChange}
-                    placeholder="Re-type your password"
-                    autoComplete="new-password"
-                    className={`rounded-lg border ${
-                      validationErrors.password_confirmation ? 'border-red' : 'border-gray-3'
-                    } bg-gray-1 placeholder:text-dark-5 w-full py-3 px-5 outline-none duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blue/20`}
-                  />
-                  {validationErrors.password_confirmation && (
-                    <p className="text-red text-sm mt-1">{validationErrors.password_confirmation[0]}</p>
-                  )}
-                </div>
-
-                <div className="mb-6 p-4 bg-blue/5 border border-blue/10 rounded-lg">
-                  <p className="text-sm text-dark-5">
-                    <span className="font-medium text-dark">Note:</span> After registration, 
-                    you&apos;ll need to complete business verification (KYC) to access B2B features 
-                    and wholesale pricing.
-                  </p>
-                </div>
-
+            <form.Subscribe
+              selector={(state) => ({
+                isSubmitting: state.isSubmitting,
+              })}
+            >
+              {({ isSubmitting }) => (
                 <button
                   type="submit"
-                  disabled={isLoading}
-                  className="w-full flex justify-center items-center font-medium text-white bg-dark py-3 px-6 rounded-lg ease-out duration-200 hover:bg-blue disabled:opacity-50 disabled:cursor-not-allowed mt-7.5"
+                  disabled={isSubmitting}
+                  className="w-full flex items-center justify-center bg-dark text-white py-3 px-6 rounded-lg hover:bg-blue disabled:opacity-50"
                 >
-                  {isLoading ? (
+                  {isSubmitting ? (
                     <>
-                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      <svg
+                        className="animate-spin h-5 w-5 mr-3"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                      >
+                        <circle
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          className="opacity-25"
+                        />
+                        <path
+                          fill="currentColor"
+                          className="opacity-75"
+                          d="M4 12a8 8 0 018-8V0C5.4 0 0 5.4 0 12h4z"
+                        />
                       </svg>
+
                       Creating Account...
                     </>
                   ) : (
                     "Create B2B Account"
                   )}
                 </button>
+              )}
+            </form.Subscribe>
 
-                <p className="text-center mt-6">
-                  Already have an account?
-                  <Link
-                    href="/signin"
-                    className="text-dark ease-out duration-200 hover:text-blue pl-2 font-medium"
-                  >
-                    Sign In Now
-                  </Link>
-                </p>
-              </form>
-            </div>
-          </div>
+            <p className="text-center mt-6">
+              Already have an account?
+              <Link
+                href="/signin"
+                className="pl-2 font-medium text-dark hover:text-blue"
+              >
+                Sign In Now
+              </Link>
+            </p>
+          </form>
         </div>
-      </section>
-    </>
+      </div>
+    </section>
   );
 };
 

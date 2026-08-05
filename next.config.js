@@ -13,6 +13,21 @@ const nextConfig = {
         hostname: '127.0.0.1',
         port: '8000',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'via.placeholder.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'grostore.themetags.com',
+        pathname: '/**',
       }
     ],
   },

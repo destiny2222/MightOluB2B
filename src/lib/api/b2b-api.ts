@@ -120,6 +120,45 @@ export interface B2BCatalogResponse {
   total: number;
 }
 
+export interface B2BCartItem {
+  id: number;
+  product_id: number;
+  product_title: string;
+  product_slug: string;
+  product_image: string[];
+  quantity: number;
+  price: number;
+  subtotal: number;
+  size?: string;
+  category_name?: string;
+}
+
+export interface B2BCartResponse {
+  items: B2BCartItem[];
+  total_price: number;
+  total_quantity: number;
+}
+
+export interface AddToCartData {
+  product_id: number;
+  quantity?: number;
+  size_variant?: string;
+}
+
+export interface AddToCartResponse {
+  message: string;
+  cart_item: any;
+}
+
+export interface UpdateCartData {
+  quantity: number;
+}
+
+export interface UpdateCartResponse {
+  message: string;
+  cart_item: any;
+}
+
 // Helper function to get auth headers
 const getAuthHeaders = (token?: string | null): HeadersInit => {
   const headers: HeadersInit = {
@@ -360,6 +399,50 @@ export async function deleteAuthorizedBuyer(
     headers: getAuthHeaders(token),
   });
 
+  return handleResponse(response);
+}
+
+// ==================== CART ENDPOINTS ====================
+
+export async function getB2BCart(token?: string): Promise<B2BCartResponse> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/cart`, {
+    method: 'GET',
+    headers: getAuthHeaders(token),
+  });
+  return handleResponse(response);
+}
+
+export async function addToB2BCart(data: AddToCartData, token?: string): Promise<AddToCartResponse> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/cart`, {
+    method: 'POST',
+    headers: getAuthHeaders(token),
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function updateB2BCartItem(cartItemId: number, data: UpdateCartData, token?: string): Promise<UpdateCartResponse> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/cart/${cartItemId}`, {
+    method: 'PUT',
+    headers: getAuthHeaders(token),
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function deleteB2BCartItem(cartItemId: number, token?: string): Promise<{message: string}> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/cart/${cartItemId}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(token),
+  });
+  return handleResponse(response);
+}
+
+export async function clearB2BCart(token?: string): Promise<{message: string}> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/cart`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(token),
+  });
   return handleResponse(response);
 }
 
