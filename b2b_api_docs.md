@@ -523,7 +523,8 @@ Adds a B2B product or variant to the cart. It automatically validates against mi
 {
   "product_id": 42,
   "quantity": 10,
-  "size_variant": "20L"
+  "size_variant": "20L",
+  "product_variant_id": 1
 }
 ```
 
@@ -531,6 +532,7 @@ Adds a B2B product or variant to the cart. It automatically validates against mi
 * `product_id`: Required, integer, must exist in products table.
 * `quantity`: Optional, minimum 1.
 * `size_variant`: Optional, string matching a product variant size.
+* `product_variant_id`: Optional, integer, must exist in product_variants table.
 
 #### Response (201 Created)
 ```json
@@ -540,6 +542,7 @@ Adds a B2B product or variant to the cart. It automatically validates against mi
     "id": 12,
     "user_id": "019fb66f-c494-73ce-b7d6-db6a309ee12e",
     "product_id": 42,
+    "product_variant_id": 1,
     "quantity": 10,
     "size": "20L",
     "price": "25.50",
@@ -628,11 +631,13 @@ Retrieves current items, shipping addresses, available rates based on weight, an
   "cart_items": [
     {
       "id": 12,
+      "product_id": 42,
       "product_title": "Wholesale Cooking Oil 20L",
       "quantity": 10,
       "price": 25.5,
       "subtotal": 255.0,
-      "size": "20L"
+      "size": "20L",
+      "variant_id": null
     }
   ],
   "shipping_addresses": [
@@ -658,14 +663,17 @@ Retrieves current items, shipping addresses, available rates based on weight, an
   "total_weight": 200.0,
   "subtotal": 255.0,
   "delivery_fee": 15.0,
-  "total_price": 270.0
+  "total_price": 270.0,
+  "credit_limit": 5000.0,
+  "unpaid_balance": 1500.0,
+  "available_credit": 3500.0
 }
 ```
 
 ---
 
 ### 5.2 Process Checkout
-Initiates an order invoice, logs items, and returns a Stripe payment url.
+Creates a purchase order and handles payment processing (Stripe checkout session for card payment or credit deduction for on_account payment).
 
 * **Endpoint**: `POST /api/v1/checkout`
 * **Headers**: Authenticated Headers Required
@@ -673,6 +681,8 @@ Initiates an order invoice, logs items, and returns a Stripe payment url.
 #### Request Payload
 ```json
 {
+  "payment_method": "card",
+  "po_number": "PO-998811",
   "ship-address": "default",
   "address": "123 Business Rd",
   "city": "London",
@@ -680,17 +690,55 @@ Initiates an order invoice, logs items, and returns a Stripe payment url.
   "country": "UK",
   "postal_code": "EC1A 1BB",
   "shipping_rate_id": 1,
+  "schedule_frequency": "monthly",
   "success_url": "https://frontend.mightyolu.com/checkout/success?session_id={CHECKOUT_SESSION_ID}",
   "cancel_url": "https://frontend.mightyolu.com/checkout/cancel"
 }
 ```
 
-#### Response (200 OK)
+#### Validation Constraints
+* `payment_method`: Required, string, must be one of: `card`, `on_account`.
+* `po_number`: Optional, string, max 255.
+* `ship-address`: Required, string.
+* `address`: Optional, string, max 255.
+* `city`: Required, string, max 255.
+* `state`: Required, string, max 255.
+* `country`: Required, string, max 255.
+* `postal_code`: Required, string, max 10.
+* `shipping_rate_id`: Required, integer, must exist in shipping_rates table.
+* `schedule_frequency`: Optional, string, must be one of: `weekly`, `monthly`.
+* `success_url`: Optional, url string.
+* `cancel_url`: Optional, url string.
+
+#### Response (201 Created)
 ```json
 {
-  "message": "Order initiated successfully.",
-  "invoice_number": "INV-20260803-912A",
-  "stripe_checkout_url": "https://checkout.stripe.com/c/pay/cs_test_..."
+  "message": "Purchase Order submitted successfully.",
+  "order": {
+    "id": 15,
+    "po_number": "PO-998811",
+    "internal_reference": "PO-ABCD1234",
+    "kyc_id": 5,
+    "user_id": "019fb66f-c494-73ce-b7d6-db6a309ee12e",
+    "status": "Submitted",
+    "payment_method": "card",
+    "total_amount": 270.0,
+    "shipping_amount": 15.0,
+    "is_draft": false,
+    "is_recurring": true,
+    "created_at": "2026-08-01T12:00:00.000000Z",
+    "items": [
+      {
+        "id": 30,
+        "purchase_order_id": 15,
+        "product_id": 42,
+        "product_variant_id": null,
+        "quantity": 10,
+        "unit_price": 25.5
+      }
+    ]
+  },
+  "checkout_url": "https://checkout.stripe.com/c/pay/cs_test_..."
 }
 ```
 
@@ -717,10 +765,10 @@ Initiates an order invoice, logs items, and returns a Stripe payment url.
 The B2B Product Catalog provides trade pricing and volume discount details dynamically resolved based on the logged-in user's approved KYC pricing tier.
 
 ### 7.1 Get All B2B Products
-Fetches a paginated list of all products configured for B2B, along with the user's specific trade pricing and minimum order quantities.
+Fetches a paginated list of all products configured for B2B.
 
 * **Endpoint**: `GET /api/v1/b2b/catalog`
-* **Headers**: Authenticated Headers Required (`b2b.approved` middleware protects this route)
+* **Headers**: Unauthenticated / Public endpoint (will dynamically resolve trade prices if authenticated via Sanctum)
 
 #### Response (200 OK)
 ```json
@@ -755,10 +803,10 @@ Fetches a paginated list of all products configured for B2B, along with the user
 ---
 
 ### 7.2 Get B2B Product Details
-Retrieves detailed information for a specific B2B product, including a breakdown of available volume discounts.
+Retrieves detailed information for a specific B2B product.
 
 * **Endpoint**: `GET /api/v1/b2b/catalog/{slug}`
-* **Headers**: Authenticated Headers Required (`b2b.approved` middleware protects this route)
+* **Headers**: Unauthenticated / Public endpoint (will dynamically resolve trade prices if authenticated via Sanctum)
 
 #### Response (200 OK)
 ```json
@@ -796,9 +844,654 @@ Retrieves detailed information for a specific B2B product, including a breakdown
     "message": "Product not found or not available for B2B"
   }
   ```
-* **403 Forbidden** (If the user's KYC status is not approved):
-  ```json
-  {
-    "message": "Your B2B application is pending or unapproved. Trade catalog access is restricted."
+
+---
+
+## 8. B2B Shipping Addresses Management
+
+B2B users can manage multiple shipping addresses. Authenticated headers are required, and the user must be an approved B2B user.
+
+### 8.1 List Shipping Addresses
+* **Endpoint**: `GET /api/v1/shipping-addresses`
+* **Headers**: Authenticated Headers Required
+
+#### Response (200 OK)
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 8,
+      "user_id": "019fb66f-c494-73ce-b7d6-db6a309ee12e",
+      "label": "Warehouse Alpha",
+      "company_name": "Acme Food Services Ltd",
+      "contact_name": "John Doe",
+      "phone": "+447700900077",
+      "address_line_1": "Unit 4, Industrial Park",
+      "address_line_2": "Canning Road",
+      "city": "London",
+      "state": "England",
+      "postal_code": "E15 3ND",
+      "country": "UK",
+      "is_default": true,
+      "delivery_instructions": "Access via back gate after 8 AM.",
+      "created_at": "2026-08-01T11:00:00.000000Z",
+      "updated_at": "2026-08-01T11:00:00.000000Z"
+    }
+  ]
+}
+```
+
+---
+
+### 8.2 Add Shipping Address
+Creates a new shipping address for the B2B user.
+
+* **Endpoint**: `POST /api/v1/shipping-addresses`
+* **Headers**: Authenticated Headers Required
+
+#### Request Payload
+```json
+{
+  "label": "Warehouse Beta",
+  "company_name": "Acme Food Services Ltd",
+  "contact_name": "Jane Doe",
+  "phone": "+447700900088",
+  "address_line_1": "12 East Side Ave",
+  "address_line_2": "Suite B",
+  "city": "London",
+  "state": "England",
+  "postal_code": "E16 4PF",
+  "country": "UK",
+  "is_default": false,
+  "delivery_instructions": "Leave with reception."
+}
+```
+
+#### Validation Constraints
+* `label`: Optional, string, max 100.
+* `company_name`: Optional, string, max 255.
+* `contact_name`: Optional, string, max 255.
+* `phone`: Optional, string, max 30.
+* `address_line_1`: Required, string, max 255.
+* `address_line_2`: Optional, string, max 255.
+* `city`: Required, string, max 255.
+* `state`: Optional, string, max 255.
+* `postal_code`: Required, string, max 20.
+* `country`: Required, string, max 100.
+* `is_default`: Optional, boolean.
+* `delivery_instructions`: Optional, string, max 500.
+
+#### Response (201 Created)
+```json
+{
+  "success": true,
+  "message": "Shipping address created successfully.",
+  "data": {
+    "id": 9,
+    "user_id": "019fb66f-c494-73ce-b7d6-db6a309ee12e",
+    "label": "Warehouse Beta",
+    "company_name": "Acme Food Services Ltd",
+    "contact_name": "Jane Doe",
+    "phone": "+447700900088",
+    "address_line_1": "12 East Side Ave",
+    "address_line_2": "Suite B",
+    "city": "London",
+    "state": "England",
+    "postal_code": "E16 4PF",
+    "country": "UK",
+    "is_default": false,
+    "delivery_instructions": "Leave with reception.",
+    "created_at": "2026-08-04T22:00:00.000000Z",
+    "updated_at": "2026-08-04T22:00:00.000000Z"
   }
-  ```
+}
+```
+
+---
+
+### 8.3 Get Shipping Address
+Retrieves a specific shipping address by ID.
+
+* **Endpoint**: `GET /api/v1/shipping-addresses/{id}`
+* **Headers**: Authenticated Headers Required
+
+#### Response (200 OK)
+```json
+{
+  "success": true,
+  "data": {
+    "id": 9,
+    "user_id": "019fb66f-c494-73ce-b7d6-db6a309ee12e",
+    "label": "Warehouse Beta",
+    "company_name": "Acme Food Services Ltd",
+    "contact_name": "Jane Doe",
+    "phone": "+447700900088",
+    "address_line_1": "12 East Side Ave",
+    "address_line_2": "Suite B",
+    "city": "London",
+    "state": "England",
+    "postal_code": "E16 4PF",
+    "country": "UK",
+    "is_default": false,
+    "delivery_instructions": "Leave with reception."
+  }
+}
+```
+
+---
+
+### 8.4 Update Shipping Address
+Updates an existing shipping address.
+
+* **Endpoint**: `PUT /api/v1/shipping-addresses/{id}`
+* **Headers**: Authenticated Headers Required
+
+#### Request Payload
+```json
+{
+  "label": "Warehouse Beta Revised",
+  "contact_name": "Jane Smith",
+  "is_default": true
+}
+```
+
+#### Response (200 OK)
+```json
+{
+  "success": true,
+  "message": "Shipping address updated successfully.",
+  "data": {
+    "id": 9,
+    "user_id": "019fb66f-c494-73ce-b7d6-db6a309ee12e",
+    "label": "Warehouse Beta Revised",
+    "company_name": "Acme Food Services Ltd",
+    "contact_name": "Jane Smith",
+    "phone": "+447700900088",
+    "address_line_1": "12 East Side Ave",
+    "address_line_2": "Suite B",
+    "city": "London",
+    "state": "England",
+    "postal_code": "E16 4PF",
+    "country": "UK",
+    "is_default": true,
+    "delivery_instructions": "Leave with reception."
+  }
+}
+```
+
+---
+
+### 8.5 Delete Shipping Address
+* **Endpoint**: `DELETE /api/v1/shipping-addresses/{id}`
+* **Headers**: Authenticated Headers Required
+
+#### Response (200 OK)
+```json
+{
+  "success": true,
+  "message": "Shipping address deleted successfully."
+}
+```
+
+---
+
+### 8.6 Set Default Shipping Address
+* **Endpoint**: `POST /api/v1/shipping-addresses/{id}/set-default`
+* **Headers**: Authenticated Headers Required
+
+#### Response (200 OK)
+```json
+{
+  "success": true,
+  "message": "Default shipping address updated.",
+  "data": {
+    "id": 9,
+    "user_id": "019fb66f-c494-73ce-b7d6-db6a309ee12e",
+    "is_default": true
+  }
+}
+```
+
+---
+
+## 9. B2B Wishlist Management
+
+Provides trade accounts with the ability to save items and later move them directly into their wholesale cart. Access requires an **approved** B2B trade account.
+
+### 9.1 Get Wishlist Items
+* **Endpoint**: `GET /api/v1/wishlist`
+* **Headers**: Authenticated Headers Required
+
+#### Response (200 OK)
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "product_id": 42,
+      "title": "Commercial Cooking Oil 20L",
+      "slug": "commercial-cooking-oil-20l",
+      "image": "b2b-product-3.jpg",
+      "product_images": ["b2b-product-3.jpg"],
+      "standard_price": 189.57,
+      "trade_price": 170.61,
+      "minimum_order_quantity": 10,
+      "category": "Wholesale Produce",
+      "added_at": "2026-08-05T01:00:00.000000Z"
+    }
+  ]
+}
+```
+
+---
+
+### 9.2 Add Product to Wishlist
+Adds a B2B product to the user's wishlist.
+
+* **Endpoint**: `POST /api/v1/wishlist`
+* **Headers**: Authenticated Headers Required
+
+#### Request Payload
+```json
+{
+  "product_id": 42
+}
+```
+
+#### Validation Constraints
+* `product_id`: Required, integer, must exist in products table, must be a B2B product (`is_b2b = true`), and must not already be in the wishlist.
+
+#### Response (201 Created)
+```json
+{
+  "success": true,
+  "message": "Product added to B2B wishlist.",
+  "data": {
+    "id": 1,
+    "user_id": "019fb66f-c494-73ce-b7d6-db6a309ee12e",
+    "product_id": 42,
+    "created_at": "2026-08-05T01:00:00.000000Z"
+  }
+}
+```
+
+---
+
+### 9.3 Remove Product from Wishlist
+* **Endpoint**: `DELETE /api/v1/wishlist/{id}`
+* **Headers**: Authenticated Headers Required
+
+#### Response (200 OK)
+```json
+{
+  "success": true,
+  "message": "Product removed from B2B wishlist."
+}
+```
+
+---
+
+### 9.4 Move Wishlist Item to B2B Cart
+Removes the item from the wishlist and places it in the B2B cart, using specified quantity and variant configuration.
+
+* **Endpoint**: `POST /api/v1/wishlist/{id}/move-to-cart`
+* **Headers**: Authenticated Headers Required
+
+#### Request Payload
+```json
+{
+  "quantity": 10,
+  "size_variant": "20L",
+  "product_variant_id": 1
+}
+```
+
+#### Response (201 Created)
+```json
+{
+  "message": "Product added to B2B cart.",
+  "cart_item": {
+    "id": 12,
+    "user_id": "019fb66f-c494-73ce-b7d6-db6a309ee12e",
+    "product_id": 42,
+    "quantity": 10,
+    "size": "20L",
+    "unit_price": 170.61
+  }
+}
+```
+
+---
+
+## 10. Request For Quotation (RFQ)
+
+For items or volumes not in the catalog, or custom supply needs, trade users can submit an RFQ.
+
+### 10.1 Submit RFQ
+* **Endpoint**: `POST /api/v1/b2b/rfq`
+* **Headers**: Authenticated Headers Required
+
+#### Request Payload
+```json
+{
+  "items": [
+    {
+      "product_id": 42,
+      "product_variant_id": null,
+      "quantity": 150
+    }
+  ],
+  "delivery_frequency": "weekly",
+  "notes": "Looking for a weekly contract of commercial oil."
+}
+```
+
+#### Validation Constraints
+* `items`: Required, array, minimum 1 item.
+* `items.*.product_id`: Required, must exist in products.
+* `items.*.product_variant_id`: Optional, must exist in product_variants.
+* `items.*.quantity`: Required, integer, minimum 1.
+* `delivery_frequency`: Optional, string, one of: `one-off`, `weekly`, `monthly`.
+* `notes`: Optional, string.
+
+#### Response (201 Created)
+```json
+{
+  "message": "RFQ submitted successfully.",
+  "rfq": {
+    "id": 3,
+    "reference_number": "RFQ-ABCDEFGH",
+    "kyc_id": 5,
+    "user_id": "019fb66f-c494-73ce-b7d6-db6a309ee12e",
+    "status": "Pending",
+    "delivery_frequency": "weekly",
+    "notes": "Looking for a weekly contract of commercial oil.",
+    "created_at": "2026-08-05T02:00:00.000000Z",
+    "items": [
+      {
+        "id": 6,
+        "rfq_id": 3,
+        "product_id": 42,
+        "product_variant_id": null,
+        "quantity": 150
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 10.2 List RFQs
+Retrieves submitted RFQs for the current B2B account.
+
+* **Endpoint**: `GET /api/v1/b2b/rfq`
+* **Headers**: Authenticated Headers Required
+
+#### Response (200 OK)
+```json
+{
+  "rfqs": [
+    {
+      "id": 3,
+      "reference_number": "RFQ-ABCDEFGH",
+      "kyc_id": 5,
+      "status": "Pending",
+      "delivery_frequency": "weekly",
+      "notes": "Looking for a weekly contract of commercial oil.",
+      "created_at": "2026-08-05T02:00:00.000000Z"
+    }
+  ]
+}
+```
+
+---
+
+### 10.3 View RFQ
+Retrieves a specific RFQ.
+
+* **Endpoint**: `GET /api/v1/b2b/rfq/{id}`
+* **Headers**: Authenticated Headers Required
+
+#### Response (200 OK)
+```json
+{
+  "rfq": {
+    "id": 3,
+    "reference_number": "RFQ-ABCDEFGH",
+    "kyc_id": 5,
+    "user_id": "019fb66f-c494-73ce-b7d6-db6a309ee12e",
+    "status": "Pending",
+    "delivery_frequency": "weekly",
+    "notes": "Looking for a weekly contract of commercial oil.",
+    "items": [
+      {
+        "id": 6,
+        "product_id": 42,
+        "quantity": 150
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 10.4 Update RFQ Status (Customer Actions)
+Allows customers to accept, decline, or request changes on a Quoted RFQ.
+
+* **Endpoint**: `PUT /api/v1/b2b/rfq/{id}/status`
+* **Headers**: Authenticated Headers Required
+
+#### Request Payload
+```json
+{
+  "action": "request_changes",
+  "comment": "Can we reduce unit price by 2%?"
+}
+```
+
+#### Validation Constraints
+* `action`: Required, string, must be one of: `accept`, `decline`, `request_changes`.
+* `comment`: Optional, string.
+
+#### Response (200 OK)
+```json
+{
+  "message": "RFQ status updated successfully.",
+  "rfq": {
+    "id": 3,
+    "status": "Pending",
+    "notes": "Looking for a weekly contract of commercial oil.\n\nChanges requested: Can we reduce unit price by 2%?"
+  }
+}
+```
+
+---
+
+## 11. Purchase Orders (PO) & Recurring Schedules
+
+Enables submitting wholesale orders directly via cards or credited on-account balances, as well as managing recurring schedule setups.
+
+### 11.1 Submit Purchase Order
+* **Endpoint**: `POST /api/v1/b2b/orders`
+* **Headers**: Authenticated Headers Required
+
+#### Request Payload
+```json
+{
+  "po_number": "PO-9911A",
+  "payment_method": "on_account",
+  "items": [
+    {
+      "product_id": 42,
+      "product_variant_id": null,
+      "quantity": 20,
+      "unit_price": 170.61
+    }
+  ],
+  "schedule_frequency": "monthly"
+}
+```
+
+#### Validation Constraints
+* `po_number`: Optional, string, max 255.
+* `payment_method`: Required, string, one of: `card`, `on_account`.
+* `items`: Required, array, minimum 1.
+* `items.*.product_id`: Required, exists in products.
+* `items.*.product_variant_id`: Optional, exists in product_variants.
+* `items.*.quantity`: Required, integer, minimum 1.
+* `items.*.unit_price`: Required, numeric, minimum 0.
+* `schedule_frequency`: Optional, string, one of: `weekly`, `monthly`.
+
+#### Response (201 Created)
+```json
+{
+  "message": "Purchase Order submitted successfully.",
+  "order": {
+    "id": 16,
+    "po_number": "PO-9911A",
+    "internal_reference": "PO-XYZ12345",
+    "kyc_id": 5,
+    "user_id": "019fb66f-c494-73ce-b7d6-db6a309ee12e",
+    "status": "Submitted",
+    "payment_method": "on_account",
+    "total_amount": 3412.20,
+    "is_draft": false,
+    "is_recurring": true,
+    "created_at": "2026-08-05T03:00:00.000000Z",
+    "items": [
+      {
+        "id": 31,
+        "product_id": 42,
+        "quantity": 20,
+        "unit_price": 170.61
+      }
+    ]
+  },
+  "checkout_url": null
+}
+```
+
+---
+
+### 11.2 List Purchase Orders
+* **Endpoint**: `GET /api/v1/b2b/orders`
+* **Headers**: Authenticated Headers Required
+
+#### Response (200 OK)
+```json
+{
+  "orders": [
+    {
+      "id": 16,
+      "po_number": "PO-9911A",
+      "internal_reference": "PO-XYZ12345",
+      "total_amount": 3412.20,
+      "status": "Submitted",
+      "payment_method": "on_account",
+      "created_at": "2026-08-05T03:00:00.000000Z"
+    }
+  ]
+}
+```
+
+---
+
+### 11.3 Show Purchase Order Details
+* **Endpoint**: `GET /api/v1/b2b/orders/{id}`
+* **Headers**: Authenticated Headers Required
+
+#### Response (200 OK)
+```json
+{
+  "order": {
+    "id": 16,
+    "po_number": "PO-9911A",
+    "internal_reference": "PO-XYZ12345",
+    "status": "Submitted",
+    "payment_method": "on_account",
+    "total_amount": 3412.20,
+    "items": [
+      {
+        "id": 31,
+        "product_id": 42,
+        "quantity": 20,
+        "unit_price": 170.61
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 11.4 Setup Recurring Schedule
+Binds an existing PO to a weekly or monthly replenishment cycle.
+
+* **Endpoint**: `POST /api/v1/b2b/orders/{id}/recurring`
+* **Headers**: Authenticated Headers Required
+
+#### Request Payload
+```json
+{
+  "frequency": "weekly"
+}
+```
+
+#### Validation Constraints
+* `frequency`: Required, string, one of: `weekly`, `monthly`.
+
+#### Response (200 OK)
+```json
+{
+  "message": "Recurring schedule updated."
+}
+```
+
+---
+
+### 11.5 Get Order Drafts
+Retrieves draft orders automatically prepared by recurring schedules that require review.
+
+* **Endpoint**: `GET /api/v1/b2b/orders/drafts`
+* **Headers**: Authenticated Headers Required
+
+#### Response (200 OK)
+```json
+{
+  "drafts": [
+    {
+      "id": 17,
+      "po_number": null,
+      "internal_reference": "PO-DRAFT88",
+      "total_amount": 3412.20,
+      "is_draft": true,
+      "status": "Draft",
+      "created_at": "2026-08-05T04:00:00.000000Z"
+    }
+  ]
+}
+```
+
+---
+
+### 11.6 Approve Order Draft
+Publishes a draft order to active submitted status.
+
+* **Endpoint**: `POST /api/v1/b2b/orders/{id}/approve`
+* **Headers**: Authenticated Headers Required
+
+#### Response (200 OK)
+```json
+{
+  "message": "Draft approved and submitted.",
+  "order": {
+    "id": 17,
+    "is_draft": false,
+    "status": "Submitted"
+  }
+}
+```
