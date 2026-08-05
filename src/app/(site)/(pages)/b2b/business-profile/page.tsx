@@ -24,7 +24,7 @@ const BusinessProfile = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { user, isAuthenticated } = useSelector(selectAuth);
-  const kycData = useSelector(selectKYCData);
+  const kycData = useSelector(selectKYCData) || user?.kyc;
   const isLoading = useSelector(selectKYCLoading);
   const error = useSelector(selectKYCError);
   const successMessage = useSelector(selectKYCSuccessMessage);
@@ -97,9 +97,23 @@ const BusinessProfile = () => {
   };
 
   if (!kycData) {
+    if (isLoading) {
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue"></div>
+        </div>
+      );
+    }
+    
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue"></div>
+      <div className="min-h-screen flex items-center justify-center flex-col gap-4">
+        <p className="text-red-500 font-semibold">{error || "Failed to load business profile."}</p>
+        <button 
+          onClick={() => dispatch(fetchBusinessProfile())}
+          className="bg-blue text-white px-4 py-2 rounded"
+        >
+          Retry
+        </button>
       </div>
     );
   }
@@ -226,8 +240,8 @@ const BusinessProfile = () => {
             )}
           </div>
 
-          {/* Authorized Buyers Section */}
-          <AuthorizedBuyersManager />
+          {/* Authorized zBuyers Section */}
+          {/* <AuthorizedBuyersManager /> */}
         </div>
       </section>
     </>

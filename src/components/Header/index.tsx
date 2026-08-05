@@ -142,73 +142,7 @@ const Header = () => {
               WELCOME TO  STORE MESSAGE OR REMOVE IT!
             </span>
           </div>
-          <div className="flex items-center gap-6">
-            {/* Currency Selector */}
-            <div className="relative" ref={currencyRef}>
-              <button
-                onClick={() => setCurrencyOpen(!currencyOpen)}
-                className="flex items-center gap-1 hover:text-blue font-semibold transition-colors duration-200"
-              >
-                {currency}
-                <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              {currencyOpen && (
-                <div className="absolute right-0 mt-1.5 w-20 bg-white border border-gray-3 shadow-lg rounded-md overflow-hidden z-999">
-                  {["USD", "EUR", "GBP"].map((curr) => (
-                    <button
-                      key={curr}
-                      onClick={() => {
-                        setCurrency(curr);
-                        setCurrencyOpen(false);
-                      }}
-                      className="block w-full text-left px-3 py-1.5 hover:bg-gray-1 hover:text-blue transition-colors font-medium"
-                    >
-                      {curr}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Language Selector */}
-            <div className="relative" ref={langRef}>
-              <button
-                onClick={() => setLangOpen(!langOpen)}
-                className="flex items-center gap-1 hover:text-blue font-semibold transition-colors duration-200"
-              >
-                <span className="mr-0.5">{lang.flag}</span>
-                <span>{lang.code}</span>
-                <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              {langOpen && (
-                <div className="absolute right-0 mt-1.5 w-24 bg-white border border-gray-3 shadow-lg rounded-md overflow-hidden z-999">
-                  {[
-                    { code: "ENG", flag: "🇺🇸" },
-                    { code: "FRA", flag: "🇫🇷" },
-                    { code: "GER", flag: "🇩🇪" }
-                  ].map((l) => (
-                    <button
-                      key={l.code}
-                      onClick={() => {
-                        setLang(l);
-                        setLangOpen(false);
-                      }}
-                      className="flex items-center gap-2 w-full text-left px-3 py-1.5 hover:bg-gray-1 hover:text-blue transition-colors font-medium"
-                    >
-                      <span>{l.flag}</span>
-                      <span>{l.code}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <span className="w-px h-3.5 bg-gray-4"></span>
-            
+          <div className="flex items-center gap-6"> 
             {/* Quick Links */}
             <Link href="/contact" className="hover:text-blue transition-colors font-semibold">Contact Us</Link>
             
@@ -248,13 +182,13 @@ const Header = () => {
                       </Link>
                       {hasB2BAccess && (
                         <>
-                          <Link
+                          {/* <Link
                             href="/b2b/business-profile"
                             onClick={() => setUserMenuOpen(false)}
                             className="block px-4 py-2 text-sm hover:bg-gray-1 transition-colors"
                           >
                             Business Profile
-                          </Link>
+                          </Link> */}
                           <Link
                             href="/b2b/rfq/history"
                             onClick={() => setUserMenuOpen(false)}
