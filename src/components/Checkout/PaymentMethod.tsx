@@ -1,16 +1,6 @@
 import React, { useState } from "react";
-import Image from "next/image";
-import { useSelector } from "react-redux";
-import { selectUser, selectHasB2BAccess, selectCurrentView } from "@/redux/features/auth-slice";
 
 const PaymentMethod = ({ onPaymentMethodChange, poNumber, onPoNumberChange }: any) => {
-  const [payment, setPayment] = useState("card");
-  const user = useSelector(selectUser);
-  const hasB2BAccess = useSelector(selectHasB2BAccess);
-  const currentView = useSelector(selectCurrentView);
-  
-  const isB2B = hasB2BAccess && currentView === 'business';
-  
   // Set Stripe as default payment method when component mounts
   React.useEffect(() => {
     if (onPaymentMethodChange) {
@@ -60,22 +50,20 @@ const PaymentMethod = ({ onPaymentMethodChange, poNumber, onPoNumberChange }: an
             </div>
           </label>
 
-          {/* {isB2B && (
-            <div className="mt-4 pt-4 border-t border-gray-3">
-              <label htmlFor="po_number" className="block text-dark font-medium mb-2 text-sm">
-                Purchase Order Number / Reference
-              </label>
-              <input
-                type="text"
-                id="po_number"
-                value={poNumber || ''}
-                onChange={(e) => onPoNumberChange && onPoNumberChange(e.target.value)}
-                placeholder="Enter your internal PO number"
-                className="w-full rounded-md border border-gray-3 px-4 py-2 text-sm outline-none focus:border-blue"
-              />
-              <p className="text-xs text-gray-5 mt-1">Optional. For your internal record keeping.</p>
-            </div>
-          )} */}
+          {/* <div className="mt-4 pt-4 border-t border-gray-3">
+            <label htmlFor="po_number" className="block text-dark font-medium mb-2 text-sm">
+              Purchase Order Number / Reference
+            </label>
+            <input
+              type="text"
+              id="po_number"
+              value={poNumber || ''}
+              onChange={(e) => onPoNumberChange && onPoNumberChange(e.target.value)}
+              placeholder="Enter your internal PO number"
+              className="w-full rounded-md border border-gray-3 px-4 py-2 text-sm outline-none focus:border-blue"
+            />
+            <p className="text-xs text-gray-5 mt-1">Optional. For your internal record keeping.</p>
+          </div> */}
         </div>
       </div>
     </div>
@@ -83,3 +71,4 @@ const PaymentMethod = ({ onPaymentMethodChange, poNumber, onPoNumberChange }: an
 };
 
 export default PaymentMethod;
+

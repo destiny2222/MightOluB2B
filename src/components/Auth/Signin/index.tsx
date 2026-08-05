@@ -6,7 +6,7 @@ import { useAppDispatch } from "@/redux/store";
 import { useSelector } from "react-redux";
 import { loginB2BUser, selectAuth, clearError } from "@/redux/features/auth-slice";
 import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 
 const Signin = () => {
   const dispatch = useAppDispatch();
@@ -22,9 +22,9 @@ const Signin = () => {
   useEffect(() => {
     if (isAuthenticated && user) {
       toast.success("Login successful!");
-      router.push("/");
+      window.location.href = "/";
     }
-  }, [isAuthenticated, user, router]);
+  }, [isAuthenticated, user]);
 
   useEffect(() => {
     if (error) {

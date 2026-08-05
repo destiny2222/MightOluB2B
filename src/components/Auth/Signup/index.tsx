@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { useForm } from "@tanstack/react-form";
 import { zodValidator } from "@tanstack/zod-form-adapter";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 
 import { useAppDispatch } from "@/redux/store";
 import { registerB2BUser } from "@/redux/features/auth-slice";
@@ -28,8 +28,9 @@ const signupSchema = z
 const Signup = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const [apiErrors, setApiErrors] = useState<any>(null);
 
-  const form = useForm({
+  const form: any = useForm({
     defaultValues: {
       name: "",
       email: "",
@@ -45,23 +46,33 @@ const Signup = () => {
     },
 
     onSubmit: async ({ value }) => {
+      setApiErrors(null);
       try {
         await dispatch(registerB2BUser(value)).unwrap();
 
         toast.success("Account created successfully!");
 
         setTimeout(() => {
-          router.push("/b2b/kyc-setup");
+          window.location.href = "/b2b/kyc-setup";
         }, 2000);
       } catch (error: any) {
-        toast.error(
-          error?.message ||
-            error?.payload?.message ||
-            "Unable to create account."
-        );
+        setApiErrors(error);
+        
+        let toastMsg = "Unable to create account.";
+        if (typeof error === "string") {
+          toastMsg = error;
+        } else if (error && typeof error === "object") {
+          const firstKey = Object.keys(error)[0];
+          if (firstKey && Array.isArray(error[firstKey]) && error[firstKey].length > 0) {
+            toastMsg = error[firstKey][0];
+          } else if (error.message) {
+            toastMsg = error.message;
+          }
+        }
+        toast.error(toastMsg);
       }
     },
-  });
+  } as any);
 
   return (
     <section className="overflow-hidden py-20 pt-64 bg-gray-2">
@@ -76,6 +87,32 @@ const Signup = () => {
               Register for wholesale pricing and bulk orders
             </p>
           </div>
+
+          {/* error message here */}
+          {form.state.errors?.length > 0 && (
+            <p className="text-red text-sm mt-1 mb-3">
+              {form.state.errors[0]?.message}
+            </p>
+          )}
+
+          {apiErrors && (
+            <div className="mb-5 p-4 rounded-lg bg-red-light-6 border border-red-light-4 text-red text-sm">
+              {typeof apiErrors === "string" ? (
+                apiErrors
+              ) : typeof apiErrors === "object" ? (
+                Object.keys(apiErrors).map((key) => {
+                  const msgs = apiErrors[key];
+                  return (
+                    <div key={key} className="mt-1 first:mt-0 font-medium">
+                      {Array.isArray(msgs) ? msgs.join(" ") : String(msgs)}
+                    </div>
+                  );
+                })
+              ) : (
+                "An unexpected error occurred."
+              )}
+            </div>
+          )}
 
           <form
             onSubmit={(e) => {

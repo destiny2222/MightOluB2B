@@ -6,6 +6,7 @@ import wishlistReducer from "./features/wishlist-slice";
 import productDetailsReducer from "./features/product-details";
 import authReducer from "./features/auth-slice";
 import kycReducer from "./features/kyc-slice";
+import b2bCheckoutReducer from "./features/b2b-checkout-slice";
 
 import { TypedUseSelectorHook, useSelector, useDispatch } from "react-redux";
 
@@ -17,6 +18,7 @@ export const store = configureStore({
     productDetailsReducer,
     authReducer,
     kycReducer,
+    b2bCheckoutReducer,
   },
 });
 

@@ -85,7 +85,7 @@ const SingleItem = ({ item }) => {
       </div>
 
       <div className="min-w-[120px]">
-        <p className="text-dark">${item.discountedPrice}</p>
+        <p className="text-dark">${Number(item.discountedPrice).toFixed(2)}</p>
       </div>
 
       <div className="min-w-[180px]">
@@ -141,7 +141,7 @@ const SingleItem = ({ item }) => {
       </div>
 
       <div className="min-w-[120px]">
-        <p className="text-dark">${item.discountedPrice * quantity}</p>
+        <p className="text-dark">${Number(item.discountedPrice * quantity).toFixed(2)}</p>
       </div>
 
       <div className="min-w-[50px] flex justify-end">

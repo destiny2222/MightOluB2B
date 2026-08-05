@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { selectIsAuthenticated, selectUser, selectHasKYC, selectKYCStatus } from "@/redux/features/auth-slice";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 
 export type KYCProtectionLevel = 'none' | 'kyc-required' | 'kyc-approved';
 

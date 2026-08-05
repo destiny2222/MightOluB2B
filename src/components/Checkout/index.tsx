@@ -1,36 +1,67 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import Breadcrumb from "../Common/Breadcrumb";
-import Login from "./Login";
 import Shipping from "./Shipping";
 import ShippingMethod from "./ShippingMethod";
 import PaymentMethod from "./PaymentMethod";
-import Coupon from "./Coupon";
-import Billing from "./Billing";
 import { useKYCProtection } from "@/hooks/useKYCProtection";
 import { useSelector } from "react-redux";
-import { selectHasB2BAccess, selectCurrentView } from "@/redux/features/auth-slice";
+import { selectHasB2BAccess, selectCurrentView, selectToken } from "@/redux/features/auth-slice";
 import { selectCartItems, selectTotalPrice } from "@/redux/features/cart-slice";
+import { useAppDispatch } from "@/redux/store";
+import { 
+  fetchB2BCheckout, 
+  submitB2BCheckout,
+  selectCheckoutDetails,
+  selectCheckoutSelectedAddressId,
+  selectCheckoutSelectedRateId,
+  selectCheckoutManualAddress,
+  selectCheckoutPaymentMethod,
+  selectCheckoutPoNumber,
+  selectCheckoutSubmitStatus,
+  setSelectedAddressId,
+  setSelectedRateId,
+  setManualAddress,
+  setPaymentMethod,
+  setPoNumber
+} from "@/redux/features/b2b-checkout-slice";
 import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 
 const Checkout = () => {
   const router = useRouter();
+  const dispatch = useAppDispatch();
+  
   const hasB2BAccess = useSelector(selectHasB2BAccess);
   const currentView = useSelector(selectCurrentView);
   const isB2B = hasB2BAccess && currentView === 'business';
-  const cartItems = useSelector(selectCartItems);
-  const totalPrice = useSelector(selectTotalPrice);
+  const token = useSelector(selectToken);
   
-  const [paymentMethod, setPaymentMethod] = React.useState("card");
-  const [poNumber, setPoNumber] = React.useState("");
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const reduxCartItems = useSelector(selectCartItems);
+  const reduxTotalPrice = useSelector(selectTotalPrice);
+
+  const checkoutDetails = useSelector(selectCheckoutDetails);
+  const selectedAddressId = useSelector(selectCheckoutSelectedAddressId);
+  const selectedRateId = useSelector(selectCheckoutSelectedRateId);
+  const manualAddress = useSelector(selectCheckoutManualAddress);
+  const paymentMethod = useSelector(selectCheckoutPaymentMethod);
+  const poNumber = useSelector(selectCheckoutPoNumber);
+  const submitStatus = useSelector(selectCheckoutSubmitStatus);
+  const isSubmitting = submitStatus === "submitting";
+ 
+
   // Protect checkout - require approved KYC
   useKYCProtection({
     level: 'kyc-approved',
     redirectTo: '/b2b/application-status',
     toastMessage: 'You must have an approved B2B account to checkout'
   });
+
+  useEffect(() => {
+    if (isB2B && token) {
+      dispatch(fetchB2BCheckout(token));
+    }
+  }, [isB2B, token, dispatch]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,47 +70,74 @@ const Checkout = () => {
       return;
     }
 
-    setIsSubmitting(true);
+    if (!selectedAddressId && (!manualAddress.address || !manualAddress.city || !manualAddress.country || !manualAddress.postal_code)) {
+      toast.error("Please provide a complete shipping address.");
+      return;
+    }
+
+    if (!selectedRateId) {
+      toast.error("Please select a shipping method.");
+      return;
+    }
+
+    if (!token) return;
+
     try {
-      const orderItems = cartItems.map(item => ({
-        product_id: item.id,
-        quantity: item.quantity,
-        unit_price: item.discountedPrice || item.price
-      }));
+      const selectedAddress = checkoutDetails?.shipping_addresses?.find((a: any) => a.id === selectedAddressId);
+      
+      let payload: any = {
+        payment_method: paymentMethod,
+        po_number: poNumber,
+        shipping_rate_id: selectedRateId,
+        success_url: `${window.location.origin}/checkout/success`,
+        cancel_url: `${window.location.origin}/checkout/cancel`
+      };
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_LARAVEL_URL}/api/v1/b2b/orders`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("token")}`
-        },
-        body: JSON.stringify({
-          payment_method: paymentMethod,
-          po_number: poNumber,
-          items: orderItems
-        })
-      });
+      if (selectedAddressId && selectedAddress) {
+        payload["ship-address"] = "manual";
+        payload.address = selectedAddress.address;
+        payload.city = selectedAddress.city;
+        payload.state = selectedAddress.state || "";
+        payload.country = selectedAddress.country;
+        payload.postal_code = selectedAddress.postal_code;
+      } else {
+        payload["ship-address"] = "manual";
+        payload.address = manualAddress.address;
+        payload.city = manualAddress.city;
+        payload.state = manualAddress.state || "";
+        payload.country = manualAddress.country;
+        payload.postal_code = manualAddress.postal_code;
+      }
 
-      if (res.ok) {
-        const data = await res.json();
-        
+      const resultAction = await dispatch(submitB2BCheckout({ token, payload }));
+      
+      if (submitB2BCheckout.fulfilled.match(resultAction)) {
+        const data = resultAction.payload;
         if (data.checkout_url) {
-          // Redirect to Stripe checkout
           window.location.href = data.checkout_url;
         } else {
           toast.success("Purchase Order submitted successfully!");
           router.push("/b2b/orders");
         }
       } else {
-        const err = await res.json();
-        toast.error(err.message || "Failed to submit order");
+        toast.error((resultAction.payload as string) || "Failed to submit order");
       }
     } catch (error) {
       toast.error("An error occurred");
-    } finally {
-      setIsSubmitting(false);
     }
   };
+
+  const cartItems = isB2B 
+    ? (checkoutDetails?.cart_items || [])
+    : reduxCartItems.map((item: any) => ({
+        id: item.id,
+        product_title: item.title,
+        quantity: item.quantity,
+        subtotal: item.discountedPrice * item.quantity
+      }));
+  const totalPrice = isB2B ? (checkoutDetails?.total_price || 0) : reduxTotalPrice;
+  const subtotal = isB2B ? (checkoutDetails?.subtotal || 0) : reduxTotalPrice;
+  const deliveryFee = isB2B ? (checkoutDetails?.delivery_fee || 0) : 0;
 
   return (
     <>
@@ -90,28 +148,14 @@ const Checkout = () => {
             <div className="flex flex-col lg:flex-row gap-7.5 xl:gap-11">
               {/* <!-- checkout left --> */}
               <div className="lg:max-w-[670px] w-full">
-                {/* <!-- billing details --> */}
-                <Billing />
-
                 {/* <!-- address box two --> */}
-                <Shipping />
-
-                {/* <!-- others note box --> */}
-                <div className="bg-white shadow-1 rounded-[10px] p-4 sm:p-8.5 mt-7.5">
-                  <div>
-                    <label htmlFor="notes" className="block mb-2.5">
-                      Other Notes (optional)
-                    </label>
-
-                    <textarea
-                      name="notes"
-                      id="notes"
-                      rows={5}
-                      placeholder="Notes about your order, e.g. speacial notes for delivery."
-                      className="rounded-md border border-gray-3 bg-gray-1 placeholder:text-dark-5 w-full p-5 outline-none duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blue/20"
-                    ></textarea>
-                  </div>
-                </div>
+                <Shipping 
+                  addresses={checkoutDetails?.shipping_addresses || []}
+                  selectedAddressId={selectedAddressId}
+                  onSelectAddress={(id) => dispatch(setSelectedAddressId(id))}
+                  manualAddress={manualAddress}
+                  setManualAddress={(address) => dispatch(setManualAddress(address))}
+                />
               </div>
 
               {/* // <!-- checkout right --> */}
@@ -137,26 +181,34 @@ const Checkout = () => {
                       </div>
                     </div>
 
-                    {cartItems.map((item) => (
-                      <div key={item.cartItemId || item.id} className="flex items-center justify-between py-5 border-b border-gray-3">
+                    {cartItems.map((item: any) => (
+                      <div key={item.id} className="flex items-center justify-between py-5 border-b border-gray-3">
                         <div>
-                          <p className="text-dark">{item.title}</p>
+                          <p className="text-dark">{item.product_title} x {item.quantity}</p>
                         </div>
                         <div>
-                          <p className="text-dark text-right">${(item.discountedPrice * item.quantity).toFixed(2)}</p>
+                          <p className="text-dark text-right">${item.subtotal.toFixed(2)}</p>
                         </div>
                       </div>
                     ))}
 
-                    {/* <!-- product item --> */}
-                    {/* <div className="flex items-center justify-between py-5 border-b border-gray-3">
+                    <div className="flex items-center justify-between py-5 border-b border-gray-3">
+                      <div>
+                        <p className="text-dark">Subtotal</p>
+                      </div>
+                      <div>
+                        <p className="text-dark text-right">${subtotal.toFixed(2)}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between py-5 border-b border-gray-3">
                       <div>
                         <p className="text-dark">Shipping Fee</p>
                       </div>
                       <div>
-                        <p className="text-dark text-right">$15.00</p>
+                        <p className="text-dark text-right">${deliveryFee.toFixed(2)}</p>
                       </div>
-                    </div> */}
+                    </div>
 
                     {/* <!-- total --> */}
                     <div className="flex items-center justify-between pt-5">
@@ -165,23 +217,29 @@ const Checkout = () => {
                       </div>
                       <div>
                         <p className="font-medium text-lg text-dark text-right">
-                          ${(totalPrice).toFixed(2)}
+                          ${totalPrice.toFixed(2)}
                         </p>
                       </div>
                     </div>
                   </div>
                 </div> 
                 {/* <!-- shipping box --> */}
-                {/* <ShippingMethod /> */}
-                <PaymentMethod 
-                  onPaymentMethodChange={setPaymentMethod} 
-                  poNumber={poNumber} 
-                  onPoNumberChange={setPoNumber} 
+                <ShippingMethod 
+                  rates={checkoutDetails?.shipping_rates || []}
+                  selectedRateId={selectedRateId}
+                  onSelectRate={(id) => dispatch(setSelectedRateId(id))}
                 />
+                
+                <PaymentMethod 
+                  onPaymentMethodChange={(method) => dispatch(setPaymentMethod(method))} 
+                  poNumber={poNumber} 
+                  onPoNumberChange={(po) => dispatch(setPoNumber(po))} 
+                />
+                
                 {/* <!-- checkout button --> */}
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !checkoutDetails}
                   className="w-full flex justify-center font-medium text-white bg-blue py-3 px-6 rounded-md ease-out duration-200 hover:bg-blue-dark mt-7.5 disabled:opacity-50"
                 >
                   {isSubmitting ? "Processing..." : "Process to Checkout"}

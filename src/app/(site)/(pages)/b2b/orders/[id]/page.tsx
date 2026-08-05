@@ -5,7 +5,7 @@ import Breadcrumb from "@/components/Common/Breadcrumb";
 import { useSelector } from "react-redux";
 import { selectCurrentView, selectHasB2BAccess } from "@/redux/features/auth-slice";
 import { useParams, useRouter } from "next/navigation";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 
 const OrderDetailPage = () => {
   const { id } = useParams();

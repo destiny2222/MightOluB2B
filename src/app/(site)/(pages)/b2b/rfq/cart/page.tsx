@@ -5,7 +5,7 @@ import Breadcrumb from "@/components/Common/Breadcrumb";
 import { useSelector } from "react-redux";
 import { selectCurrentView, selectHasB2BAccess } from "@/redux/features/auth-slice";
 import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 
 const RfqCartPage = () => {
   const router = useRouter();

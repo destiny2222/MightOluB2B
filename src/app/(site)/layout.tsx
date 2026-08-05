@@ -13,6 +13,8 @@ import QuickViewModal from "@/components/Common/QuickViewModal";
 import CartSidebarModal from "@/components/Common/CartSidebarModal";
 import { PreviewSliderProvider } from "../context/PreviewSliderContext";
 import PreviewSliderModal from "@/components/Common/PreviewSlider";
+  import { ToastContainer, toast } from 'react-toastify';
+
 
 import ScrollToTop from "@/components/Common/ScrollToTop";
 import PreLoader from "@/components/Common/PreLoader";
@@ -33,12 +35,14 @@ export default function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning={true}>
-      <body>
+      <body suppressHydrationWarning={true}>
         {loading ? (
           <PreLoader />
         ) : (
           <>
+           <ToastContainer  position="top-right"  autoClose={3000} hideProgressBar={true} theme="colored" />
             <ReduxProvider>
+             
               <GlobalKYCGuard />
               <CartModalProvider>
                 <ModalProvider>

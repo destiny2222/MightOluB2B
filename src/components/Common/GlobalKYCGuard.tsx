@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useSelector } from "react-redux";
 import { selectIsAuthenticated, selectHasKYC, selectUser, selectAuth } from "@/redux/features/auth-slice";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 
 const GlobalKYCGuard = () => {
   const router = useRouter();

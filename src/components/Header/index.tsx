@@ -17,7 +17,7 @@ import {
   switchView
 } from "@/redux/features/auth-slice";
 import Image from "next/image";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 import logo from "../../../public/images/logo/logo.png";
 
 const Header = () => {
@@ -276,15 +276,7 @@ const Header = () => {
                           >
                             Recurring Drafts
                           </Link>
-                          <button
-                            onClick={handleSwitchView}
-                            className="w-full text-left px-4 py-2 text-sm hover:bg-gray-1 transition-colors flex items-center justify-between"
-                          >
-                            <span>Switch to {currentView === 'personal' ? 'Business' : 'Personal'}</span>
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                            </svg>
-                          </button>
+                           
                         </>
                       )}
                       {user.kyc_id && user.kyc?.status !== 'approved' && (
@@ -374,17 +366,7 @@ const Header = () => {
               </svg>
               <span className="text-[11px] text-dark group-hover:text-blue font-semibold mt-1 transition-colors">Wishlist</span>
             </Link>
-
-            {/* Compare */}
-            <Link
-              href="#"
-              className="flex flex-col items-center hover:-translate-y-0.5 hover:text-blue transition-all duration-300 group"
-            >
-              <svg className="w-6.5 h-6.5 text-dark group-hover:text-blue transition-colors duration-200" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
-              </svg>
-              <span className="text-[11px] text-dark group-hover:text-blue font-semibold mt-1 transition-colors">Compare</span>
-            </Link>
+ 
 
             {/* Cart */}
             <button

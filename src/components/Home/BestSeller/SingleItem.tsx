@@ -8,7 +8,7 @@ import { updateQuickView } from "@/redux/features/quickView-slice";
 import { selectIsAuthenticated, selectCanPurchase, selectKYCStatus } from "@/redux/features/auth-slice";
 import Image from "next/image";
 import Link from "next/link";
-import { addItemToWishlist } from "@/redux/features/wishlist-slice";
+import { handleB2BAddToWishlist } from "@/lib/helpers/wishlistHelpers";
 import { updateproductDetails } from "@/redux/features/product-details";
 import { useRouter } from "next/navigation";
 import { addToCartWithKYCCheck } from "@/lib/helpers/kycHelpers";
@@ -42,13 +42,12 @@ const SingleItem = ({ item }: { item: Product }) => {
   };
 
   const handleItemToWishList = () => {
-    dispatch(
-      addItemToWishlist({
-        ...item,
-        status: "available",
-        quantity: item.minimum_order_quantity || 1,
-      })
-    );
+    handleB2BAddToWishlist({
+      dispatch,
+      productId: item.id,
+      isAuthenticated,
+      router,
+    });
   };
 
   return (
@@ -97,8 +96,8 @@ const SingleItem = ({ item }: { item: Product }) => {
           </h3>
 
           <span className="flex items-center justify-center gap-2 font-medium text-lg">
-            <span className="text-dark">${item.discountedPrice}</span>
-            <span className="text-dark-4 line-through">${item.price}</span>
+            <span className="text-dark">${Number(item.discountedPrice).toFixed(2)}</span>
+            <span className="text-dark-4 line-through">${Number(item.price).toFixed(2)}</span>
           </span>
         </div>
 

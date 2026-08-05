@@ -5,7 +5,7 @@ import { Provider } from "react-redux";
 import React, { useEffect } from "react";
 import { loadAuthFromStorage, fetchUserProfile } from "./features/auth-slice";
 import { fetchCartAsync } from "./features/cart-slice";
-import { loadWishlistFromStorage } from "./features/wishlist-slice";
+import { fetchWishlistAsync } from "./features/wishlist-slice";
 
 export function ReduxProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -18,10 +18,11 @@ export function ReduxProvider({ children }: { children: React.ReactNode }) {
       store.dispatch(fetchUserProfile());
     }
     
-    // Fetch cart data from backend API (requires authentication)
-    store.dispatch(fetchCartAsync());
-    // Load wishlist data from localStorage
-    store.dispatch(loadWishlistFromStorage());
+    // Fetch cart data from backend API (requires authentication) 
+    if (token) {
+      store.dispatch(fetchCartAsync());
+      store.dispatch(fetchWishlistAsync());
+    }
   }, []);
 
   return <Provider store={store}>{children}</Provider>;

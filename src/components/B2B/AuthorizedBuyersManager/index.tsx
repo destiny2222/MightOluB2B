@@ -14,7 +14,7 @@ import {
   clearKYCError,
   clearSuccessMessage,
 } from "@/redux/features/kyc-slice";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 
 const AuthorizedBuyersManager = () => {
   const dispatch = useAppDispatch();

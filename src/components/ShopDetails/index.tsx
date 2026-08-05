@@ -3,21 +3,63 @@ import React, { use, useEffect, useState } from "react";
 import Breadcrumb from "../Common/Breadcrumb";
 import Image from "next/image"; 
 import { usePreviewSlider } from "@/app/context/PreviewSliderContext";
-import { useAppSelector } from "@/redux/store";
-import { useSelector } from "react-redux";
-import { selectCurrentView, selectHasB2BAccess } from "@/redux/features/auth-slice";
+import { useAppDispatch, useAppSelector } from "@/redux/store";
+import { selectCurrentView, selectHasB2BAccess, selectIsAuthenticated, selectCanPurchase, selectKYCStatus  } from "@/redux/features/auth-slice";
 import Link from "next/link";
 import { getB2BProductDetails } from "@/lib/api/b2b-api";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 import { mapProductImages } from "@/lib/helpers/productHelpers";
+import { addToCartAsync, selectCartIsLoading } from "@/redux/features/cart-slice";
+import { useRouter } from "next/navigation";
+
 
 const ShopDetails = () => { 
   const { openPreviewModal } = usePreviewSlider();
   const [previewImg, setPreviewImg] = useState(0);
 
-  const currentView = useSelector(selectCurrentView);
-  const hasB2BAccess = useSelector(selectHasB2BAccess);
+  const currentView = useAppSelector(selectCurrentView);
+  const hasB2BAccess = useAppSelector(selectHasB2BAccess);
   const isB2B = hasB2BAccess && currentView === 'business';
+
+  // Inside the component
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+  const isLoadingCart = useAppSelector(selectCartIsLoading);
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const canPurchase = useAppSelector(selectCanPurchase);
+  const kycStatus = useAppSelector(selectKYCStatus);
+
+
+const handleAddToCart = async () => {
+  if (!isAuthenticated) {
+    toast.error("Please sign in to add items to cart");
+    router.push("/signin"); // or your login route
+    return;
+  }
+
+  if (!canPurchase) {
+    toast.error("Your trade account must be approved to purchase");
+    return;
+  }
+
+  try {
+    const result = await dispatch(
+      addToCartAsync({
+        id: product.id,
+        title: product.title,
+        price: product.standard_price || product.price,
+        discountedPrice: product.trade_price || product.discountedPrice,
+        quantity: quantity,
+        size: undefined, 
+        imgs: product.imgs,
+      })
+    ).unwrap();
+
+    toast.success("Product added to cart");
+  } catch (error: any) {
+    toast.error(error || "Failed to add to cart");
+  }
+};
  
   const productFromStorage = useAppSelector(
     (state) => state.productDetailsReducer.value
@@ -371,11 +413,14 @@ const ShopDetails = () => {
                   </form>
                   <div className="flex flex-wrap items-center gap-4.5 mt-6">
                   
-                  <a href="#"
-                    className="inline-flex font-medium text-white bg-blue py-3 px-7 rounded-md ease-out duration-200 hover:bg-blue-dark"
-                  >
-                    Add to Cart
-                  </a>
+                <button
+                  type="button"
+                  onClick={handleAddToCart}
+                  disabled={isLoadingCart}
+                  className="inline-flex font-medium text-white bg-blue py-3 px-7 rounded-md ease-out duration-200 hover:bg-blue-dark disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {isLoadingCart ? "Adding..." : "Add to Cart"}
+                </button>
                       
                       {isB2B && (
                         <button

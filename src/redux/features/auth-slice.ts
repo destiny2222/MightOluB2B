@@ -234,6 +234,7 @@ export const selectIsBusinessOwner = (state: RootState) =>
   state.authReducer.user?.is_business_owner || false;
 export const selectHasB2BAccess = (state: RootState) =>
   state.authReducer.b2bStatus === 'approved';
+export const selectToken = (state: RootState) => state.authReducer.token;
 
 // KYC-related selectors
 export const selectHasKYC = (state: RootState) =>

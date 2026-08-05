@@ -5,7 +5,7 @@ import React from "react";
 import { useSelector } from "react-redux";
 import { selectIsAuthenticated, selectCanPurchase, selectKYCStatus } from "@/redux/features/auth-slice";
 import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 import Link from "next/link";
 
 const OrderSummary = () => {
@@ -117,7 +117,7 @@ const OrderSummary = () => {
               </div>
               <div>
                 <p className="text-dark text-right">
-                  ${item.discountedPrice * item.quantity}
+                  ${Number(item.discountedPrice * item.quantity).toFixed(2)}
                 </p>
               </div>
             </div>
@@ -130,7 +130,7 @@ const OrderSummary = () => {
             </div>
             <div>
               <p className="font-medium text-lg text-dark text-right">
-                ${totalPrice}
+                ${Number(totalPrice).toFixed(2)}
               </p>
             </div>
           </div>

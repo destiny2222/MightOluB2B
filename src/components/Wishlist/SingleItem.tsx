@@ -1,18 +1,19 @@
 import React from "react";
 import { AppDispatch } from "@/redux/store";
 import { useDispatch } from "react-redux";
-import toast from "react-hot-toast";
-
-import { removeItemFromWishlist } from "@/redux/features/wishlist-slice";
+import { toast } from "react-toastify";
+import { handleB2BRemoveFromWishlist } from "@/lib/helpers/wishlistHelpers";
 import { addToCartAsync } from "@/redux/features/cart-slice";
-
 import Image from "next/image";
 
-const SingleItem = ({ item }) => {
+const SingleItem = ({ item }: { item: any }) => {
   const dispatch = useDispatch<AppDispatch>();
 
   const handleRemoveFromWishlist = () => {
-    dispatch(removeItemFromWishlist(item.id));
+    handleB2BRemoveFromWishlist({
+      dispatch,
+      wishlistId: item.id,
+    });
   };
 
   const handleAddToCart = async () => {
@@ -20,6 +21,7 @@ const SingleItem = ({ item }) => {
       await dispatch(
         addToCartAsync({
           ...item,
+          id: item.productId, 
           quantity: item.minimum_order_quantity || 1,
         })
       ).unwrap();
@@ -29,12 +31,15 @@ const SingleItem = ({ item }) => {
     }
   };
 
+  // const isInStock = item.stock > 0 || item.inStock === true; 
+
   return (
     <div className="flex items-center border-t border-gray-3 py-5 px-10">
+      {/* Remove button */}
       <div className="min-w-[83px]">
         <button
-          onClick={() => handleRemoveFromWishlist()}
-          aria-label="button for remove product from wishlist"
+          onClick={handleRemoveFromWishlist}
+          aria-label="Remove product from wishlist"
           className="flex items-center justify-center rounded-lg max-w-[38px] w-full h-9.5 bg-gray-2 border border-gray-3 ease-out duration-200 hover:bg-red-light-6 hover:border-red-light-4 hover:text-red"
         >
           <svg
@@ -59,93 +64,76 @@ const SingleItem = ({ item }) => {
         </button>
       </div>
 
+      {/* Product */}
       <div className="min-w-[387px]">
-        <div className="flex items-center justify-between gap-5">
-          <div className="w-full flex items-center gap-5.5">
-            <div className="flex items-center justify-center rounded-[5px] bg-gray-2 max-w-[80px] w-full h-17.5">
-              {item.imgs?.thumbnails?.[0] ? (
-                <Image 
-                  src={item.imgs.thumbnails[0]} 
-                  alt={item.title || "product"} 
-                  width={200} 
-                  height={200} 
-                  unoptimized 
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-5">
-                  <svg
-                    width="40"
-                    height="40"
-                    viewBox="0 0 40 40"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M35 30C35 30.663 34.7366 31.2989 34.2678 31.7678C33.7989 32.2366 33.163 32.5 32.5 32.5H7.5C6.83696 32.5 6.20107 32.2366 5.73223 31.7678C5.26339 31.2989 5 30.663 5 30V10C5 9.33696 5.26339 8.70107 5.73223 8.23223C6.20107 7.76339 6.83696 7.5 7.5 7.5H12.5L15 5H25L27.5 7.5H32.5C33.163 7.5 33.7989 7.76339 34.2678 8.23223C34.7366 8.70107 35 9.33696 35 10V30Z"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M20 27.5C23.4518 27.5 26.25 24.7018 26.25 21.25C26.25 17.7982 23.4518 15 20 15C16.5482 15 13.75 17.7982 13.75 21.25C13.75 24.7018 16.5482 27.5 20 27.5Z"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-              )}
-            </div>
-            </div>
+        <div className="flex items-center gap-5.5">
+          <div className="flex items-center justify-center rounded-[5px] bg-gray-2 max-w-[80px] w-full h-17.5 shrink-0">
+            {item.imgs?.thumbnails?.[0] ? (
+              <Image
+                src={item.imgs.thumbnails[0]}
+                alt={item.title || "product"}
+                width={200}
+                height={200}
+                unoptimized
+                className="object-contain max-h-full"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-gray-5">
+                {/* fallback svg */}
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                  <path
+                    d="M35 30C35 30.663 34.7366 31.2989 34.2678 31.7678C33.7989 32.2366 33.163 32.5 32.5 32.5H7.5C6.83696 32.5 6.20107 32.2366 5.73223 31.7678C5.26339 31.2989 5 30.663 5 30V10C5 9.33696 5.26339 8.70107 5.73223 8.23223C6.20107 7.76339 6.83696 7.5 7.5 7.5H12.5L15 5H25L27.5 7.5H32.5C33.163 7.5 33.7989 7.76339 34.2678 8.23223C34.7366 8.70107 35 9.33696 35 10V30Z"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M20 27.5C23.4518 27.5 26.25 24.7018 26.25 21.25C26.25 17.7982 23.4518 15 20 15C16.5482 15 13.75 17.7982 13.75 21.25C13.75 24.7018 16.5482 27.5 20 27.5Z"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+            )}
+          </div>
 
-            <div>
-              <h3 className="text-dark ease-out duration-200 hover:text-blue">
-                <a href="#"> {item.title} </a>
-              </h3>
-            </div>
+          <div>
+            <h3 className="text-dark ease-out duration-200 hover:text-blue">
+              <a href={`/products/${item.slug || item.id}`}>{item.title}</a>
+            </h3>
           </div>
         </div>
       </div>
 
+      {/* Unit Price */}
       <div className="min-w-[205px]">
-        <p className="text-dark">${item.discountedPrice}</p>
+        <p className="text-dark">${Number(item.discountedPrice ?? item.price).toFixed(2)}</p>
       </div>
 
-      <div className="min-w-[265px]">
-        <div className="flex items-center gap-1.5">
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 20 20"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M9.99935 14.7917C10.3445 14.7917 10.6243 14.5119 10.6243 14.1667V9.16669C10.6243 8.82151 10.3445 8.54169 9.99935 8.54169C9.65417 8.54169 9.37435 8.82151 9.37435 9.16669V14.1667C9.37435 14.5119 9.65417 14.7917 9.99935 14.7917Z"
-              fill="#F23030"
-            />
-            <path
-              d="M9.99935 5.83335C10.4596 5.83335 10.8327 6.20645 10.8327 6.66669C10.8327 7.12692 10.4596 7.50002 9.99935 7.50002C9.53911 7.50002 9.16602 7.12692 9.16602 6.66669C9.16602 6.20645 9.53911 5.83335 9.99935 5.83335Z"
-              fill="#F23030"
-            />
-            <path
-              fillRule="evenodd"
-              clipRule="evenodd"
-              d="M1.04102 10C1.04102 5.05247 5.0518 1.04169 9.99935 1.04169C14.9469 1.04169 18.9577 5.05247 18.9577 10C18.9577 14.9476 14.9469 18.9584 9.99935 18.9584C5.0518 18.9584 1.04102 14.9476 1.04102 10ZM9.99935 2.29169C5.74215 2.29169 2.29102 5.74283 2.29102 10C2.29102 14.2572 5.74215 17.7084 9.99935 17.7084C14.2565 17.7084 17.7077 14.2572 17.7077 10C17.7077 5.74283 14.2565 2.29169 9.99935 2.29169Z"
-              fill="#F23030"
-            />
-          </svg>
+      {/* Stock Status */}
+      {/* <div className="min-w-[265px]">
+        {isInStock ? (
+          <div className="flex items-center gap-1.5">
+            <span className="text-green">In Stock</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"> 
+            </svg>
+            <span className="text-red">Out of Stock</span>
+          </div>
+        )}
+      </div> */}
 
-          <span className="text-red"> Out of Stock </span>
-        </div>
-      </div>
-
+      {/* Action */}
       <div className="min-w-[150px] flex justify-end">
         <button
-          onClick={() => handleAddToCart()}
-          className="inline-flex text-dark hover:text-white bg-gray-1 border border-gray-3 py-2.5 px-6 rounded-md ease-out duration-200 hover:bg-blue hover:border-gray-3"
+          onClick={handleAddToCart}
+          // disabled={!isInStock}
+          className="inline-flex text-dark hover:text-white bg-gray-1 border border-gray-3 py-2.5 px-6 rounded-md ease-out duration-200 hover:bg-blue hover:border-gray-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-1 disabled:hover:text-dark"
         >
           Add to Cart
         </button>

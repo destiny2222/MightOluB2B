@@ -16,7 +16,7 @@ import {
   clearSuccessMessage
 } from "@/redux/features/kyc-slice";
 import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 import { Metadata } from "next";
 import { useKYCProtection } from "@/hooks/useKYCProtection";
 

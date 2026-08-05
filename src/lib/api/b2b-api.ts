@@ -160,14 +160,14 @@ export interface UpdateCartResponse {
 }
 
 // Helper function to get auth headers
-const getAuthHeaders = (token?: string | null): HeadersInit => {
+export const getAuthHeaders = (token?: string | null): HeadersInit => {
   const headers: HeadersInit = {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
   };
 
   const authToken = token || (typeof window !== 'undefined' ? localStorage.getItem('b2b_token') : null);
-  
+
   if (authToken) {
     headers['Authorization'] = `Bearer ${authToken}`;
   }
@@ -179,7 +179,7 @@ const getAuthHeaders = (token?: string | null): HeadersInit => {
 async function handleResponse<T>(response: Response): Promise<T> {
   const contentType = response.headers.get('content-type');
   const isJson = contentType?.includes('application/json');
-  
+
   const data = isJson ? await response.json() : await response.text();
 
   if (!response.ok) {
@@ -430,7 +430,7 @@ export async function updateB2BCartItem(cartItemId: number, data: UpdateCartData
   return handleResponse(response);
 }
 
-export async function deleteB2BCartItem(cartItemId: number, token?: string): Promise<{message: string}> {
+export async function deleteB2BCartItem(cartItemId: number, token?: string): Promise<{ message: string }> {
   const response = await fetch(`${API_BASE_URL}${API_VERSION}/cart/${cartItemId}`, {
     method: 'DELETE',
     headers: getAuthHeaders(token),
@@ -438,11 +438,81 @@ export async function deleteB2BCartItem(cartItemId: number, token?: string): Pro
   return handleResponse(response);
 }
 
-export async function clearB2BCart(token?: string): Promise<{message: string}> {
+export async function clearB2BCart(token?: string): Promise<{ message: string }> {
   const response = await fetch(`${API_BASE_URL}${API_VERSION}/cart`, {
     method: 'DELETE',
     headers: getAuthHeaders(token),
   });
+  return handleResponse(response);
+}
+
+
+
+// ==================== WISHLIST ENDPOINTS ====================
+
+export interface B2BWishlistItem {
+  id: string;
+  product_id: number;
+  title: string;
+  slug: string;
+  image: string;
+  product_images?: string[];
+  standard_price: number;
+  trade_price: number;
+  minimum_order_quantity?: number;
+  category?: string;
+  added_at?: string;
+}
+
+export interface B2BWishlistResponse {
+  success: boolean;
+  data: B2BWishlistItem[];
+}
+
+export async function getB2BWishlist(token?: string): Promise<B2BWishlistResponse> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/wishlist`, {
+    method: 'GET',
+    headers: getAuthHeaders(token),
+  });
+  return handleResponse(response);
+}
+
+export async function addToB2BWishlist(
+  productId: number,
+  token?: string
+): Promise<{ success: boolean; message: string; data?: any }> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/wishlist`, {
+    method: 'POST',
+    headers: getAuthHeaders(token),
+    body: JSON.stringify({ product_id: productId }),
+  });
+  return handleResponse(response);
+}
+
+export async function removeFromB2BWishlist(
+  wishlistId: string,
+  token?: string
+): Promise<{ success: boolean; message: string }> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/wishlist/${wishlistId}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(token),
+  });
+  return handleResponse(response);
+}
+
+export async function moveWishlistToCart(
+  wishlistId: string,
+  data: { quantity?: number; size_variant?: string } = {},
+  token?: string
+): Promise<any> {
+  const response = await fetch(
+    `${API_BASE_URL}${API_VERSION}/b2b/wishlist/${wishlistId}/move-to-cart`,
+    {
+      method: 'POST',
+      headers: getAuthHeaders(token),
+      body: JSON.stringify(data),
+    }
+  );
   return handleResponse(response);
 }
 
