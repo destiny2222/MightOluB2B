@@ -516,6 +516,84 @@ export async function moveWishlistToCart(
   return handleResponse(response);
 }
 
+// ==================== SHIPPING ADDRESS ENDPOINTS ====================
+
+export interface ShippingAddress {
+  id: number;
+  user_id: string;
+  label?: string;
+  company_name?: string;
+  contact_name?: string;
+  phone?: string;
+  address_line_1: string;
+  address_line_2?: string;
+  city: string;
+  state?: string;
+  postal_code: string;
+  country: string;
+  is_default: boolean;
+  delivery_instructions?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ShippingAddressData {
+  label?: string;
+  company_name?: string;
+  contact_name?: string;
+  phone?: string;
+  address_line_1: string;
+  address_line_2?: string;
+  city: string;
+  state?: string;
+  postal_code: string;
+  country: string;
+  is_default?: boolean;
+  delivery_instructions?: string;
+}
+
+export async function getShippingAddresses(token?: string): Promise<{ success: boolean; data: ShippingAddress[] }> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/shipping-addresses`, {
+    method: 'GET',
+    headers: getAuthHeaders(token),
+  });
+  return handleResponse(response);
+}
+
+export async function addShippingAddress(data: ShippingAddressData, token?: string): Promise<{ success: boolean; message: string; data: ShippingAddress }> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/shipping-addresses`, {
+    method: 'POST',
+    headers: getAuthHeaders(token),
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function updateShippingAddress(id: number, data: Partial<ShippingAddressData>, token?: string): Promise<{ success: boolean; message: string; data: ShippingAddress }> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/shipping-addresses/${id}`, {
+    method: 'PUT',
+    headers: getAuthHeaders(token),
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function deleteShippingAddress(id: number, token?: string): Promise<{ success: boolean; message: string }> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/shipping-addresses/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(token),
+  });
+  return handleResponse(response);
+}
+
+export async function setDefaultShippingAddress(id: number, token?: string): Promise<{ success: boolean; message: string; data: ShippingAddress }> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/shipping-addresses/${id}/set-default`, {
+    method: 'POST',
+    headers: getAuthHeaders(token),
+  });
+  return handleResponse(response);
+}
+
 // ==================== UTILITY FUNCTIONS ====================
 
 /**
@@ -568,4 +646,60 @@ export function hasB2BAccess(user: User | null): boolean {
  */
 export function isBusinessOwner(user: User | null): boolean {
   return !!(user?.is_business_owner);
+}
+
+export async function updateUserProfile(data: { first_name: string; last_name: string; email: string }, token?: string): Promise<{ success: boolean; message: string; data?: any }> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/profile`, {
+    method: "PUT",
+    headers: getAuthHeaders(token),
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function changeUserPassword(data: any, token?: string): Promise<{ success: boolean; message: string }> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/change-password`, {
+    method: "PUT",
+    headers: getAuthHeaders(token),
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function forgotPassword(data: { email: string }): Promise<{ success: boolean; message: string }> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/forgot-password`, {
+    method: "POST",
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function resetPassword(data: any): Promise<{ success: boolean; message: string }> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/reset-password`, {
+    method: "POST",
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function getPurchaseOrders(): Promise<{ orders: any[] }> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/b2b/orders`, {
+    headers: getAuthHeaders(),
+  });
+  return handleResponse(response);
+}
+
+export async function getPurchaseOrderDetails(id: string | number): Promise<{ order: any }> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/b2b/orders/${id}`, {
+    headers: getAuthHeaders(),
+  });
+  return handleResponse(response);
 }

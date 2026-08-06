@@ -11,6 +11,7 @@ import { updateproductDetails } from "@/redux/features/product-details";
 import { selectIsAuthenticated, selectCanPurchase, selectKYCStatus } from "@/redux/features/auth-slice";
 import { useRouter } from "next/navigation";
 import { addToCartWithKYCCheck } from "@/lib/helpers/kycHelpers";
+import { handleB2BAddToWishlist } from "@/lib/helpers/wishlistHelpers";
 
 const QuickViewModal = () => {
   const { isModalOpen, closeModal } = useModalContext();
@@ -51,6 +52,19 @@ const QuickViewModal = () => {
     }
   };
 
+  const handleAddToWishlist = async () => {
+    if (!product) return;
+    const success = await handleB2BAddToWishlist({
+      dispatch,
+      productId: product.id,
+      isAuthenticated,
+      router,
+    });
+    if (success) {
+      closeModal();
+    }
+  };
+
   useEffect(() => {
     // closing modal while clicking outside
     function handleClickOutside(event) {
@@ -65,10 +79,14 @@ const QuickViewModal = () => {
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
-
-      setQuantity(1);
     };
   }, [isModalOpen, closeModal]);
+
+  useEffect(() => {
+    if (isModalOpen && product) {
+      setQuantity(product.minimum_order_quantity || 1);
+    }
+  }, [isModalOpen, product]);
 
   return (
     <div
@@ -159,17 +177,12 @@ const QuickViewModal = () => {
             </div>
 
             <div className="max-w-[445px] w-full">
-              <span className="inline-block text-custom-xs font-medium text-white py-1 px-3 bg-green mb-6.5">
-                SALE 20% OFF
-              </span>
-
               <h3 className="font-semibold text-xl xl:text-heading-5 text-dark mb-4">
                 {product.title}
               </h3>
 
               <div className="flex flex-wrap items-center gap-5 mb-6">
-                <div className="flex items-center gap-1.5">
-                  {/* <!-- stars --> */}
+                {/* <div className="flex items-center gap-1.5"> 
                   <div className="flex items-center gap-1">
                     <svg
                       className="fill-[#FFA645]"
@@ -281,7 +294,7 @@ const QuickViewModal = () => {
                     <span className="font-medium text-dark"> 4.7 Rating </span>
                     <span className="text-dark-2"> (5 reviews) </span>
                   </span>
-                </div>
+                </div> */}
 
                 <div className="flex items-center gap-2">
                   <svg
@@ -308,13 +321,14 @@ const QuickViewModal = () => {
                     </defs>
                   </svg>
 
-                  <span className="font-medium text-dark"> In Stock </span>
+                  {/* <span className="font-medium text-dark"> {product?.availability ? "In Stock" : "Out of Stock"} </span> */}
                 </div>
               </div>
 
-              <p>
-                Lorem Ipsum is simply dummy text of the printing and typesetting
-                industry. Lorem Ipsum has.
+              <p className="text-dark-5 text-sm mb-3">
+                {product?.description && product?.description.length > 150
+                  ? product.description.substring(0, 150) + '...'
+                  : product?.description || 'No description available'}
               </p>
 
               <div className="flex flex-wrap justify-between gap-5 mt-6 mb-7.5">
@@ -340,10 +354,19 @@ const QuickViewModal = () => {
 
                   <div className="flex items-center gap-3">
                     <button
-                      onClick={() => quantity > 1 && setQuantity(quantity - 1)}
+                      onClick={() => {
+                        const minQty = product?.minimum_order_quantity || 1;
+                        if (quantity > minQty) {
+                          setQuantity(quantity - 1);
+                        }
+                      }}
+                      disabled={quantity <= (product?.minimum_order_quantity || 1)}
                       aria-label="button for remove product"
-                      className="flex items-center justify-center w-10 h-10 rounded-[5px] bg-gray-2 text-dark ease-out duration-200 hover:text-blue"
-                      disabled={quantity < 0 && true}
+                      className={`flex items-center justify-center w-10 h-10 rounded-[5px] border border-gray-3 bg-gray-2 ease-out duration-200 ${
+                        quantity <= (product?.minimum_order_quantity || 1)
+                          ? "text-gray-4 cursor-not-allowed"
+                          : "text-dark hover:text-blue"
+                      }`}
                     >
                       <svg
                         className="fill-current"
@@ -362,17 +385,33 @@ const QuickViewModal = () => {
                       </svg>
                     </button>
 
-                    <span
-                      className="flex items-center justify-center w-20 h-10 rounded-[5px] border border-gray-4 bg-white font-medium text-dark"
-                      x-text="quantity"
-                    >
-                      {quantity}
-                    </span>
+                    <input
+                      type="number"
+                      value={quantity}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value);
+                        const minQty = product?.minimum_order_quantity || 1;
+                        if (!isNaN(value) && value >= minQty) {
+                          setQuantity(value);
+                        } else if (!isNaN(value) && value < minQty) {
+                          setQuantity(minQty);
+                        }
+                      }}
+                      onBlur={(e) => {
+                        const value = parseInt(e.target.value);
+                        const minQty = product?.minimum_order_quantity || 1;
+                        if (isNaN(value) || value < minQty) {
+                          setQuantity(minQty);
+                        }
+                      }}
+                      min={product?.minimum_order_quantity || 1}
+                      className="flex items-center justify-center w-20 h-10 rounded-[5px] border border-gray-4 bg-white font-medium text-dark text-center focus:outline-none focus:ring-2 focus:ring-blue [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
 
                     <button
                       onClick={() => setQuantity(quantity + 1)}
                       aria-label="button for add product"
-                      className="flex items-center justify-center w-10 h-10 rounded-[5px] bg-gray-2 text-dark ease-out duration-200 hover:text-blue"
+                      className="flex items-center justify-center w-10 h-10 rounded-[5px] border border-gray-3 bg-gray-2 text-dark ease-out duration-200 hover:text-blue"
                     >
                       <svg
                         className="fill-current"
@@ -411,6 +450,7 @@ const QuickViewModal = () => {
                 </button>
 
                 <button
+                  onClick={handleAddToWishlist}
                   className={`inline-flex items-center gap-2 font-medium text-white bg-dark py-3 px-6 rounded-md ease-out duration-200 hover:bg-opacity-95 `}
                 >
                   <svg

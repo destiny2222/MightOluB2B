@@ -142,13 +142,12 @@ const Checkout = () => {
   return (
     <>
       <Breadcrumb title={"Checkout"} pages={["checkout"]} />
-      <section className="overflow-hidden py-20 bg-gray-2">
+      <section className="overflow-hidden py-20 bg-[#F9FAFB]">
         <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
           <form onSubmit={handleSubmit}>
             <div className="flex flex-col lg:flex-row gap-7.5 xl:gap-11">
               {/* <!-- checkout left --> */}
-              <div className="lg:max-w-[670px] w-full">
-                {/* <!-- address box two --> */}
+              <div className="lg:max-w-[670px] w-full flex flex-col gap-6">
                 <Shipping 
                   addresses={checkoutDetails?.shipping_addresses || []}
                   selectedAddressId={selectedAddressId}
@@ -156,15 +155,26 @@ const Checkout = () => {
                   manualAddress={manualAddress}
                   setManualAddress={(address) => dispatch(setManualAddress(address))}
                 />
+                
+                <ShippingMethod 
+                  rates={checkoutDetails?.shipping_rates || []}
+                  selectedRateId={selectedRateId}
+                  onSelectRate={(id) => dispatch(setSelectedRateId(id))}
+                />
+                
+                <PaymentMethod 
+                  onPaymentMethodChange={(method) => dispatch(setPaymentMethod(method))} 
+                  poNumber={poNumber} 
+                  onPoNumberChange={(po) => dispatch(setPoNumber(po))} 
+                />
               </div>
 
               {/* // <!-- checkout right --> */}
-              <div className="max-w-[455px] w-full">
-                {/* <!-- order list box --> */}
-                <div className="bg-white shadow-1 rounded-[10px]">
-                  <div className="border-b border-gray-3 py-5 px-4 sm:px-8.5">
-                    <h3 className="font-medium text-xl text-dark">
-                      Your Order
+              <div className="max-w-[455px] w-full relative">
+                <div className="sticky top-24 bg-white shadow-lg shadow-blue/5 rounded-2xl border border-gray-2 overflow-hidden">
+                  <div className="bg-gray-1/50 border-b border-gray-2 py-5 px-6 sm:px-8.5">
+                    <h3 className="font-semibold text-xl text-dark">
+                      Order Summary
                     </h3>
                   </div>
 
@@ -184,7 +194,10 @@ const Checkout = () => {
                     {cartItems.map((item: any) => (
                       <div key={item.id} className="flex items-center justify-between py-5 border-b border-gray-3">
                         <div>
-                          <p className="text-dark">{item.product_title} x {item.quantity}</p>
+                          <p className="text-dark">
+                            {item.product_title} 
+                            <span className="text-dark-5 ml-2 bg-gray-2 px-1.5 py-0.5 rounded text-xs"> Qty: {item.quantity}</span>
+                          </p>
                         </div>
                         <div>
                           <p className="text-dark text-right">${item.subtotal.toFixed(2)}</p>
@@ -222,28 +235,30 @@ const Checkout = () => {
                       </div>
                     </div>
                   </div>
+                  <div className="p-4 sm:p-8.5 pt-0 mt-4">
+                    <button
+                      type="submit"
+                      disabled={isSubmitting || !checkoutDetails}
+                      className="w-full flex items-center justify-center gap-2 font-medium text-white bg-dark py-3.5 px-6 rounded-xl ease-out duration-200 hover:bg-dark/90 hover:shadow-lg disabled:opacity-50 transition-all mt-4"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Processing...
+                        </>
+                      ) : (
+                        "Place Order"
+                      )}
+                    </button>
+                    
+                    <p className="text-center text-custom-xs text-gray-5 mt-4">
+                      By placing your order, you agree to our Terms of Service and Privacy Policy.
+                    </p>
+                  </div>
                 </div> 
-                {/* <!-- shipping box --> */}
-                <ShippingMethod 
-                  rates={checkoutDetails?.shipping_rates || []}
-                  selectedRateId={selectedRateId}
-                  onSelectRate={(id) => dispatch(setSelectedRateId(id))}
-                />
-                
-                <PaymentMethod 
-                  onPaymentMethodChange={(method) => dispatch(setPaymentMethod(method))} 
-                  poNumber={poNumber} 
-                  onPoNumberChange={(po) => dispatch(setPoNumber(po))} 
-                />
-                
-                {/* <!-- checkout button --> */}
-                <button
-                  type="submit"
-                  disabled={isSubmitting || !checkoutDetails}
-                  className="w-full flex justify-center font-medium text-white bg-blue py-3 px-6 rounded-md ease-out duration-200 hover:bg-blue-dark mt-7.5 disabled:opacity-50"
-                >
-                  {isSubmitting ? "Processing..." : "Process to Checkout"}
-                </button>
               </div>
             </div>
           </form>

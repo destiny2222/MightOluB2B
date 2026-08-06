@@ -26,4 +26,5 @@ export type Product = {
   availableSizes?: string[];
   availableColors?: string[];
   soldAmount?: number;
+  availability?: boolean;
 };

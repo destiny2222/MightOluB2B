@@ -61,7 +61,10 @@ const SingleItem = ({ item }) => {
           <h3 className="font-medium text-dark mb-1 ease-out duration-200 hover:text-blue">
             <a href="#"> {item.title} </a>
           </h3>
-          <p className="text-custom-sm">Price: ${Number(item.discountedPrice).toFixed(2)}</p>
+          <p className="text-custom-sm">
+            Price: ${Number(item.discountedPrice).toFixed(2)}
+            <span className="text-dark-5 ml-2 bg-gray-2 px-1.5 py-0.5 rounded text-xs">Qty: {item.quantity}</span>
+          </p>
         </div>
       </div>
 

@@ -16,9 +16,9 @@ interface ShippingMethodProps {
 
 const ShippingMethod = ({ rates, selectedRateId, onSelectRate }: ShippingMethodProps) => {
   return (
-    <div className="bg-white shadow-1 rounded-[10px] mt-7.5">
-      <div className="border-b border-gray-3 py-5 px-4 sm:px-8.5">
-        <h3 className="font-medium text-xl text-dark">Shipping Method</h3>
+    <div className="bg-white shadow-md rounded-2xl mt-7.5 border border-gray-2 overflow-hidden">
+      <div className="border-b border-gray-2 bg-gray-1/50 py-5 px-6 sm:px-8.5">
+        <h3 className="font-semibold text-lg text-dark flex items-center gap-2.5">Shipping Method</h3>
       </div>
 
       <div className="p-4 sm:p-8.5">
@@ -28,7 +28,11 @@ const ShippingMethod = ({ rates, selectedRateId, onSelectRate }: ShippingMethodP
               <label
                 key={rate.id}
                 htmlFor={`rate-${rate.id}`}
-                className="flex cursor-pointer select-none items-center gap-3.5"
+                className={`flex cursor-pointer select-none items-center gap-4 rounded-xl border p-5 transition-all duration-200 ${
+                  selectedRateId === rate.id 
+                    ? "border-blue bg-blue/5 ring-1 ring-blue/20" 
+                    : "border-gray-3 hover:border-blue/50 hover:bg-gray-1"
+                }`}
               >
                 <div className="relative">
                   <input
@@ -48,7 +52,7 @@ const ShippingMethod = ({ rates, selectedRateId, onSelectRate }: ShippingMethodP
                   ></div>
                 </div>
 
-                <div className="rounded-md border-[0.5px] py-3.5 px-5 ease-out duration-200 hover:bg-gray-2 hover:border-transparent hover:shadow-none w-full max-w-[280px]">
+                <div className="w-full">
                   <div className="flex flex-col">
                     <p className="font-semibold text-dark">${Number(rate.price).toFixed(2)}</p>
                     <p className="text-custom-xs text-gray-5">{rate.delivery_type}</p>

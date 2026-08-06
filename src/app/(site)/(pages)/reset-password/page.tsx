@@ -1,15 +1,14 @@
-import React from "react";
-import ShopWithSidebar from "@/components/ShopWithSidebar";
+import ResetPassword from "@/components/Auth/ResetPassword";
+import React, { Suspense } from "react";
 import { ToastContainer } from "react-toastify";
-
 import { Metadata } from "next";
+
 export const metadata: Metadata = {
-  title: "Shop Page | B2B  B2B E-commerce",
-  description: "This is Shop Page for B2B  Template",
-  // other metadata
+  title: "Reset Password | B2B E-commerce",
+  description: "Reset your password",
 };
 
-const ShopWithSidebarPage = () => {
+const ResetPasswordPage = () => {
   return (
     <main>
       <ToastContainer 
@@ -24,9 +23,11 @@ const ShopWithSidebarPage = () => {
        pauseOnHover
        theme="colored"
       />
-      <ShopWithSidebar />
+      <Suspense fallback={<div className="flex justify-center py-20">Loading...</div>}>
+        <ResetPassword />
+      </Suspense>
     </main>
   );
 };
 
-export default ShopWithSidebarPage;
+export default ResetPasswordPage;

@@ -5,6 +5,7 @@ import OrderModal from "./OrderModal";
 const SingleOrder = ({ orderItem, smallView }: any) => {
   const [showDetails, setShowDetails] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
+  const displayId = String(orderItem.orderId || orderItem.id || "00000000").slice(-8);
 
   const toggleDetails = () => {
     setShowDetails(!showDetails);
@@ -25,7 +26,7 @@ const SingleOrder = ({ orderItem, smallView }: any) => {
         <div className="items-center justify-between border-t border-gray-3 py-5 px-7.5 hidden md:flex">
           <div className="min-w-[111px]">
             <p className="text-custom-sm text-red">
-              #{orderItem.orderId.slice(-8)}
+              #{displayId}
             </p>
           </div>
           <div className="min-w-[175px]">
@@ -41,7 +42,7 @@ const SingleOrder = ({ orderItem, smallView }: any) => {
                   ? "text-red bg-red-light-6"
                   : orderItem.status === "processing"
                   ? "text-yellow bg-yellow-light-4"
-                  : "Unknown Status"
+                  : "text-dark bg-gray-3"
               }`}
             >
               {orderItem.status}
@@ -71,7 +72,7 @@ const SingleOrder = ({ orderItem, smallView }: any) => {
             <div className="">
               <p className="text-custom-sm text-dark">
                 <span className="font-bold pr-2"> Order:</span> #
-                {orderItem.orderId.slice(-8)}
+                {displayId}
               </p>
             </div>
             <div className="">
@@ -92,7 +93,7 @@ const SingleOrder = ({ orderItem, smallView }: any) => {
                       ? "text-red bg-red-light-6"
                       : orderItem.status === "processing"
                       ? "text-yellow bg-yellow-light-4"
-                      : "Unknown Status"
+                      : "text-dark bg-gray-3"
                   }`}
                 >
                   {orderItem.status}

@@ -122,9 +122,9 @@ const ProductItem = ({ item }: { item: Product }) => {
         </div>
       </div>
 
-      <div className="flex items-center gap-2.5 mb-2">
+      {/* <div className="flex items-center gap-2.5 mb-2">
         <p className="text-custom-sm">({item.reviews})</p>
-      </div>
+      </div> */}
 
       <h3
         className="font-medium text-dark ease-out duration-200 hover:text-blue mb-1.5"

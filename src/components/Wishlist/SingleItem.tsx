@@ -34,40 +34,12 @@ const SingleItem = ({ item }: { item: any }) => {
   // const isInStock = item.stock > 0 || item.inStock === true; 
 
   return (
-    <div className="flex items-center border-t border-gray-3 py-5 px-10">
-      {/* Remove button */}
-      <div className="min-w-[83px]">
-        <button
-          onClick={handleRemoveFromWishlist}
-          aria-label="Remove product from wishlist"
-          className="flex items-center justify-center rounded-lg max-w-[38px] w-full h-9.5 bg-gray-2 border border-gray-3 ease-out duration-200 hover:bg-red-light-6 hover:border-red-light-4 hover:text-red"
-        >
-          <svg
-            className="fill-current"
-            width="22"
-            height="22"
-            viewBox="0 0 22 22"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M9.19509 8.22222C8.92661 7.95374 8.49131 7.95374 8.22282 8.22222C7.95433 8.49071 7.95433 8.92601 8.22282 9.1945L10.0284 11L8.22284 12.8056C7.95435 13.074 7.95435 13.5093 8.22284 13.7778C8.49133 14.0463 8.92663 14.0463 9.19511 13.7778L11.0006 11.9723L12.8061 13.7778C13.0746 14.0463 13.5099 14.0463 13.7784 13.7778C14.0469 13.5093 14.0469 13.074 13.7784 12.8055L11.9729 11L13.7784 9.19451C14.0469 8.92603 14.0469 8.49073 13.7784 8.22224C13.5099 7.95376 13.0746 7.95376 12.8062 8.22224L11.0006 10.0278L9.19509 8.22222Z"
-              fill=""
-            />
-            <path
-              fillRule="evenodd"
-              clipRule="evenodd"
-              d="M11.0007 1.14587C5.55835 1.14587 1.14648 5.55773 1.14648 11C1.14648 16.4423 5.55835 20.8542 11.0007 20.8542C16.443 20.8542 20.8548 16.4423 20.8548 11C20.8548 5.55773 16.443 1.14587 11.0007 1.14587ZM2.52148 11C2.52148 6.31713 6.31774 2.52087 11.0007 2.52087C15.6836 2.52087 19.4798 6.31713 19.4798 11C19.4798 15.683 15.6836 19.4792 11.0007 19.4792C6.31774 19.4792 2.52148 15.683 2.52148 11Z"
-              fill=""
-            />
-          </svg>
-        </button>
-      </div>
-
-      {/* Product */}
-      <div className="min-w-[387px]">
-        <div className="flex items-center gap-5.5">
-          <div className="flex items-center justify-center rounded-[5px] bg-gray-2 max-w-[80px] w-full h-17.5 shrink-0">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 p-5 sm:p-6 bg-white rounded-2xl shadow-sm border border-gray-2 transition-shadow hover:shadow-md">
+      
+      {/* Product Info Left Side */}
+      <div className="flex items-center gap-5 flex-1">
+        <a href={`/products/${item.slug || item.id}`} className="block shrink-0">
+          <div className="flex items-center justify-center rounded-xl bg-gray-1 max-w-[100px] w-full h-[100px] shrink-0 overflow-hidden group">
             {item.imgs?.thumbnails?.[0] ? (
               <Image
                 src={item.imgs.thumbnails[0]}
@@ -75,69 +47,67 @@ const SingleItem = ({ item }: { item: any }) => {
                 width={200}
                 height={200}
                 unoptimized
-                className="object-contain max-h-full"
+                className="object-contain max-h-full group-hover:scale-105 transition-transform duration-300"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-5">
-                {/* fallback svg */}
-                <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                  <path
-                    d="M35 30C35 30.663 34.7366 31.2989 34.2678 31.7678C33.7989 32.2366 33.163 32.5 32.5 32.5H7.5C6.83696 32.5 6.20107 32.2366 5.73223 31.7678C5.26339 31.2989 5 30.663 5 30V10C5 9.33696 5.26339 8.70107 5.73223 8.23223C6.20107 7.76339 6.83696 7.5 7.5 7.5H12.5L15 5H25L27.5 7.5H32.5C33.163 7.5 33.7989 7.76339 34.2678 8.23223C34.7366 8.70107 35 9.33696 35 10V30Z"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M20 27.5C23.4518 27.5 26.25 24.7018 26.25 21.25C26.25 17.7982 23.4518 15 20 15C16.5482 15 13.75 17.7982 13.75 21.25C13.75 24.7018 16.5482 27.5 20 27.5Z"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
+              <div className="w-full h-full flex items-center justify-center text-gray-4">
+                <svg className="w-8 h-8 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </div>
             )}
           </div>
+        </a>
 
-          <div>
-            <h3 className="text-dark ease-out duration-200 hover:text-blue">
-              <a href={`/products/${item.slug || item.id}`}>{item.title}</a>
+        <div className="flex flex-col flex-1">
+          <a href={`/products/${item.slug || item.id}`} className="inline-block group">
+            <h3 className="text-lg font-semibold text-dark ease-out duration-200 group-hover:text-blue line-clamp-2">
+              {item.title}
             </h3>
+          </a>
+          <p className="text-gray-5 mt-1 font-medium">${Number(item.discountedPrice ?? item.price).toFixed(2)}</p>
+          
+          {/* Mobile-only layout gap */}
+          <div className="sm:hidden mt-4 flex items-center gap-4">
+            <button
+              onClick={handleAddToCart}
+              className="inline-flex flex-1 justify-center items-center text-white bg-blue py-2.5 px-5 rounded-xl ease-out duration-200 hover:bg-blue-dark hover:shadow-lg disabled:opacity-50 text-sm font-medium"
+            >
+              Add to Cart
+            </button>
+            <button
+              onClick={handleRemoveFromWishlist}
+              aria-label="Remove product from wishlist"
+              className="flex items-center justify-center w-11 h-11 rounded-xl text-gray-4 hover:bg-red-light-6 hover:text-red transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Unit Price */}
-      <div className="min-w-[205px]">
-        <p className="text-dark">${Number(item.discountedPrice ?? item.price).toFixed(2)}</p>
-      </div>
-
-      {/* Stock Status */}
-      {/* <div className="min-w-[265px]">
-        {isInStock ? (
-          <div className="flex items-center gap-1.5">
-            <span className="text-green">In Stock</span>
-          </div>
-        ) : (
-          <div className="flex items-center gap-1.5">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"> 
-            </svg>
-            <span className="text-red">Out of Stock</span>
-          </div>
-        )}
-      </div> */}
-
-      {/* Action */}
-      <div className="min-w-[150px] flex justify-end">
+      {/* Desktop Actions Right Side */}
+      <div className="hidden sm:flex items-center gap-4 shrink-0">
         <button
           onClick={handleAddToCart}
-          // disabled={!isInStock}
-          className="inline-flex text-dark hover:text-white bg-gray-1 border border-gray-3 py-2.5 px-6 rounded-md ease-out duration-200 hover:bg-blue hover:border-gray-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-1 disabled:hover:text-dark"
+          className="inline-flex text-white bg-blue border border-transparent py-2.5 px-6 rounded-xl ease-out duration-200 hover:bg-blue-dark hover:shadow-[0px_8px_16px_rgba(64,135,42,0.15)] disabled:opacity-50 transition-all font-medium"
         >
           Add to Cart
         </button>
+        
+        <button
+          onClick={handleRemoveFromWishlist}
+          aria-label="Remove product from wishlist"
+          className="flex items-center justify-center w-11 h-11 rounded-xl text-gray-4 hover:bg-red-light-6 hover:text-red transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
       </div>
+      
     </div>
   );
 };

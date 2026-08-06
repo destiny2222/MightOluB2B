@@ -3,7 +3,8 @@ import {
   addToWishlistAsync,
   removeFromWishlistAsync,
 } from "@/redux/features/wishlist-slice"; // or b2b-wishlist-slice
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
+
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 interface WishlistParams {

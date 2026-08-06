@@ -9,16 +9,16 @@ const PaymentMethod = ({ onPaymentMethodChange, poNumber, onPoNumberChange }: an
   }, [onPaymentMethodChange]);
 
   return (
-    <div className="bg-white shadow-1 rounded-[10px] mt-7.5">
-      <div className="border-b border-gray-3 py-5 px-4 sm:px-8.5">
-        <h3 className="font-medium text-xl text-dark">Payment Method</h3>
+    <div className="bg-white shadow-md rounded-2xl mt-7.5 border border-gray-2 overflow-hidden">
+      <div className="border-b border-gray-2 bg-gray-1/50 py-5 px-6 sm:px-8.5">
+        <h3 className="font-semibold text-lg text-dark flex items-center gap-2.5">Payment Method</h3>
       </div>
 
       <div className="p-4 sm:p-8.5">
         <div className="flex flex-col gap-3">
           <label
             htmlFor="card"
-            className="flex cursor-pointer select-none items-center gap-4"
+            className="flex cursor-pointer select-none items-center gap-4 rounded-xl border border-blue bg-blue/5 p-5 ring-1 ring-blue/20 transition-all duration-200"
           >
             <div className="relative">
               <input
@@ -33,9 +33,7 @@ const PaymentMethod = ({ onPaymentMethodChange, poNumber, onPoNumberChange }: an
                 className={`flex h-4 w-4 items-center justify-center rounded-full border-4 border-blue`}
               ></div>
             </div>
-            <div
-              className={`rounded-md border-[0.5px] py-3.5 px-5 ease-out duration-200 border-transparent bg-gray-2 min-w-[240px]`}
-            >
+            <div className="w-full">
               <div className="flex items-center">
                 <div className="pr-2.5 flex items-center justify-center gap-1">
                   <svg className="w-8 h-8 text-dark" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">

@@ -1,6 +1,7 @@
 import React from "react";
 
 const OrderDetails = ({ orderItem }: any) => {
+  const displayId = String(orderItem.orderId || orderItem.id || "00000000").slice(-8);
   return (
     <>
       <div className="items-center justify-between py-4.5 px-7.5 hidden md:flex ">
@@ -31,7 +32,7 @@ const OrderDetails = ({ orderItem }: any) => {
       <div className="items-center justify-between border-t border-gray-3 py-5 px-7.5 hidden md:flex">
         <div className="min-w-[111px]">
           <p className="text-custom-sm text-red">
-            #{orderItem.orderId.slice(-8)}
+            #{displayId}
           </p>
         </div>
         <div className="min-w-[175px]">
@@ -49,7 +50,7 @@ const OrderDetails = ({ orderItem }: any) => {
                 ? "text-red bg-red-light-6"
                 : orderItem.status === "processing"
                 ? "text-yellow bg-yellow-light-4"
-                : "Unknown Status"
+                : "text-dark bg-gray-3"
             }`}
           >
             {orderItem.status}

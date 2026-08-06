@@ -1,15 +1,14 @@
+import ForgotPassword from "@/components/Auth/ForgotPassword";
 import React from "react";
-import Cancel from "@/components/Checkout/Cancel";
-import { Metadata } from "next";
 import { ToastContainer } from "react-toastify";
-
+import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Checkout Cancelled | B2B E-commerce",
-  description: "Your checkout process has been cancelled.",
+  title: "Forgot Password | B2B E-commerce",
+  description: "Request a password reset link",
 };
 
-const CancelPage = () => {
+const ForgotPasswordPage = () => {
   return (
     <main>
       <ToastContainer 
@@ -24,9 +23,9 @@ const CancelPage = () => {
        pauseOnHover
        theme="colored"
       />
-      <Cancel />
+      <ForgotPassword />
     </main>
   );
 };
 
-export default CancelPage;
+export default ForgotPasswordPage;

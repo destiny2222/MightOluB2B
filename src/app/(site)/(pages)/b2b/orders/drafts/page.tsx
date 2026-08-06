@@ -2,65 +2,45 @@
 
 import React, { useEffect, useState } from "react";
 import Breadcrumb from "@/components/Common/Breadcrumb";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { selectCurrentView, selectHasB2BAccess } from "@/redux/features/auth-slice";
+import { 
+  fetchB2BDrafts, 
+  approveB2BDraft, 
+  selectB2BDrafts, 
+  selectB2BDraftsStatus 
+} from "@/redux/features/b2b-orders-slice";
+import { AppDispatch } from "@/redux/store";
 import Link from "next/link";
 import { toast } from "react-toastify";
 
 const RecurringDraftsPage = () => {
+  const dispatch = useDispatch<AppDispatch>();
   const currentView = useSelector(selectCurrentView);
   const hasB2BAccess = useSelector(selectHasB2BAccess);
   const isB2B = hasB2BAccess && currentView === 'business';
 
-  const [drafts, setDrafts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const drafts = useSelector(selectB2BDrafts) || [];
+  const status = useSelector(selectB2BDraftsStatus);
+  const loading = status === 'loading' || status === 'idle';
+  
   const [isApproving, setIsApproving] = useState<string | null>(null);
 
   useEffect(() => {
     if (isB2B) {
-      fetchDrafts();
-    } else {
-      setLoading(false);
-    }
-  }, [isB2B]);
-
-  const fetchDrafts = async () => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_LARAVEL_URL}/api/v1/b2b/orders/drafts`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        }
+      dispatch(fetchB2BDrafts()).unwrap().catch((err) => {
+        toast.error(err || "Failed to fetch drafts");
       });
-      if (response.ok) {
-        const data = await response.json();
-        setDrafts(data.drafts);
-      }
-    } catch (error) {
-      console.error("Failed to fetch drafts", error);
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [isB2B, dispatch]);
 
   const handleApproveDraft = async (id: string) => {
     setIsApproving(id);
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_LARAVEL_URL}/api/v1/b2b/orders/${id}/approve`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        }
-      });
-
-      if (response.ok) {
-        toast.success("Draft approved and order submitted!");
-        setDrafts(drafts.filter(d => d.id !== id));
-      } else {
-        const err = await response.json();
-        toast.error(err.message || "Failed to approve draft");
-      }
-    } catch (error) {
-      toast.error("An error occurred");
+      await dispatch(approveB2BDraft(id)).unwrap();
+      toast.success("Draft approved and order submitted!");
+    } catch (err: any) {
+      toast.error(err || "Failed to approve draft");
     } finally {
       setIsApproving(null);
     }
