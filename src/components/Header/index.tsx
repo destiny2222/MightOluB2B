@@ -19,6 +19,7 @@ import {
 import Image from "next/image";
 import { toast } from "react-toastify";
 import logo from "../../../public/images/logo/logo.png";
+import { useProducts } from "@/hooks/useProducts";
 
 const Header = () => {
   const dispatch = useAppDispatch();
@@ -114,16 +115,18 @@ const Header = () => {
     };
   }, []);
 
-  const categoriesList = [
-    "Desktop",
-    "Laptop",
-    "Monitor",
-    "UPS",
-    "Phone",
-    "Watch",
-    "Mouse",
-    "Tablet"
-  ];
+  const { products } = useProducts();
+  const categoriesList = React.useMemo(() => {
+    const list = Array.from(new Set(products.map((p) => p.category).filter(Boolean)));
+    return list.length > 0 ? list : [
+      "Baking & Sugar",
+      "Eggs & Dairy",
+      "Meat & Poultry",
+      "Catering & Packaging",
+      "Rice & Grains",
+      "Seasoning & Oils"
+    ];
+  }, [products]);
 
   return (
     <header
