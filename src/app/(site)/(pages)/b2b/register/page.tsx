@@ -1,4 +1,4 @@
-import B2BSignup from "@/components/Auth/B2BSignup";
+import B2BSignup from "@/components/Auth/Signup";
 import React from "react";
 
 import { Metadata } from "next";

@@ -138,6 +138,7 @@ const Checkout = () => {
   const totalPrice = isB2B ? (checkoutDetails?.total_price || 0) : reduxTotalPrice;
   const subtotal = isB2B ? (checkoutDetails?.subtotal || 0) : reduxTotalPrice;
   const deliveryFee = isB2B ? (checkoutDetails?.delivery_fee || 0) : 0;
+  const discountAmount = isB2B ? (checkoutDetails?.discount_amount || 0) : 0;
 
   return (
     <>
@@ -153,8 +154,24 @@ const Checkout = () => {
                   selectedAddressId={selectedAddressId}
                   onSelectAddress={(id) => dispatch(setSelectedAddressId(id))}
                   manualAddress={manualAddress}
-                  setManualAddress={(address) => dispatch(setManualAddress(address))}
+                  setManualAddress={(addr) => dispatch(setManualAddress(addr))}
                 />
+                
+                {/* {isB2B && (
+                  <div className="bg-white p-6 md:p-8 rounded-[10px] shadow-1 flex flex-col gap-4">
+                    <div>
+                      <label htmlFor="po-number" className="block text-dark font-medium mb-1.5">Purchase Order (PO) Number</label>
+                      <input 
+                        type="text" 
+                        id="po-number" 
+                        placeholder="e.g. PO-12345"
+                        value={poNumber}
+                        onChange={(e) => dispatch(setPoNumber(e.target.value))}
+                        className="w-full border border-gray-3 rounded-md py-3 px-5 text-dark placeholder-gray-5 focus:border-blue focus-visible:outline-none"
+                      />
+                    </div>
+                  </div>
+                )} */}
                 
                 <ShippingMethod 
                   rates={checkoutDetails?.shipping_rates || []}
@@ -163,40 +180,26 @@ const Checkout = () => {
                 />
                 
                 <PaymentMethod 
-                  onPaymentMethodChange={(method) => dispatch(setPaymentMethod(method))} 
-                  poNumber={poNumber} 
-                  onPoNumberChange={(po) => dispatch(setPoNumber(po))} 
+                  method={paymentMethod}
+                  onSelectMethod={(m) => dispatch(setPaymentMethod(m))}
+                  isB2B={isB2B}
+                  availableCredit={checkoutDetails?.available_credit || 0}
+                  totalPrice={totalPrice}
                 />
               </div>
 
-              {/* // <!-- checkout right --> */}
-              <div className="max-w-[455px] w-full relative">
-                <div className="sticky top-24 bg-white shadow-lg shadow-blue/5 rounded-2xl border border-gray-2 overflow-hidden">
-                  <div className="bg-gray-1/50 border-b border-gray-2 py-5 px-6 sm:px-8.5">
-                    <h3 className="font-semibold text-xl text-dark">
-                      Order Summary
-                    </h3>
-                  </div>
-
-                  <div className="pt-2.5 pb-8.5 px-4 sm:px-8.5">
-                    {/* <!-- title --> */}
-                    <div className="flex items-center justify-between py-5 border-b border-gray-3">
-                      <div>
-                        <h4 className="font-medium text-dark">Product</h4>
-                      </div>
-                      <div>
-                        <h4 className="font-medium text-dark text-right">
-                          Subtotal
-                        </h4>
-                      </div>
-                    </div>
+              {/* <!-- checkout right --> */}
+              <div className="w-full lg:max-w-[400px]">
+                <div className="bg-white rounded-[10px] shadow-1">
+                  <div className="p-4 sm:p-8.5 pb-0">
+                    <h4 className="font-bold text-dark text-xl mb-6">Order Summary</h4>
 
                     {cartItems.map((item: any) => (
-                      <div key={item.id} className="flex items-center justify-between py-5 border-b border-gray-3">
+                      <div key={item.id} className="flex items-center justify-between py-4 border-b border-gray-3">
                         <div>
-                          <p className="text-dark">
-                            {item.product_title} 
-                            <span className="text-dark-5 ml-2 bg-gray-2 px-1.5 py-0.5 rounded text-xs"> Qty: {item.quantity}</span>
+                          <p className="text-dark font-medium">{item.product_title}</p>
+                          <p className="text-sm">
+                            Qty: {item.quantity}
                           </p>
                         </div>
                         <div>
@@ -213,6 +216,17 @@ const Checkout = () => {
                         <p className="text-dark text-right">${subtotal.toFixed(2)}</p>
                       </div>
                     </div>
+
+                    {discountAmount > 0 && (
+                      <div className="flex items-center justify-between py-5 border-b border-gray-3">
+                        <div>
+                          <p className="text-dark">Discount (-)</p>
+                        </div>
+                        <div>
+                          <p className="text-dark text-right">-${discountAmount.toFixed(2)}</p>
+                        </div>
+                      </div>
+                    )}
 
                     <div className="flex items-center justify-between py-5 border-b border-gray-3">
                       <div>
