@@ -24,6 +24,7 @@ export const useProducts = () => {
             volume_discounts: item.volume_discounts,
             standard_price: item.standard_price, // Keep original B2B fields
             trade_price: item.trade_price,
+            category: item.category,
             description: item.description,
             imgs: mapProductImages(item),
           }));
