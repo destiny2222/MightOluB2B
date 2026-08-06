@@ -18,7 +18,7 @@ const Orders = () => {
             createdAt: new Date(po.created_at).toLocaleDateString(),
             status: po.status,
             title: po.internal_reference || `Order ${po.po_number}`,
-            total: `$${parseFloat(po.total_amount).toFixed(2)}`,
+            total: `£${parseFloat(po.total_amount).toFixed(2)}`,
             rawOrder: po
           }));
           setOrders(mappedOrders);

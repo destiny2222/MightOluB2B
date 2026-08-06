@@ -95,7 +95,7 @@ const SingleItem = ({ item, allProducts }: { item: any, allProducts?: any[] }) =
       </div>
 
       <div className="min-w-[120px]">
-        <p className="text-dark">${Number(item.discountedPrice).toFixed(2)}</p>
+        <p className="text-dark">£{Number(item.discountedPrice).toFixed(2)}</p>
       </div>
 
       <div className="min-w-[180px]">
@@ -165,7 +165,7 @@ const SingleItem = ({ item, allProducts }: { item: any, allProducts?: any[] }) =
       </div>
 
       <div className="min-w-[120px]">
-        <p className="text-dark">${Number(item.discountedPrice * quantity).toFixed(2)}</p>
+        <p className="text-dark">£{Number(item.discountedPrice * quantity).toFixed(2)}</p>
       </div>
 
       <div className="min-w-[50px] flex justify-end">

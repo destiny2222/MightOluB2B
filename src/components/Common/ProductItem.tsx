@@ -134,8 +134,8 @@ const ProductItem = ({ item }: { item: Product }) => {
       </h3>
 
       <span className="flex items-center gap-2 font-medium text-lg">
-        <span className="text-dark">${Number(item.discountedPrice).toFixed(2)}</span>
-        <span className="text-dark-4 line-through">${Number(item.price).toFixed(2)}</span>
+        <span className="text-dark">£{Number(item.discountedPrice).toFixed(2)}</span>
+        <span className="text-dark-4 line-through">£{Number(item.price).toFixed(2)}</span>
       </span>
     </div>
   );

@@ -2,6 +2,7 @@
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination } from "swiper/modules";
 
+
 // Import Swiper styles
 import "swiper/css/pagination";
 import "swiper/css";
@@ -27,7 +28,7 @@ const HeroCarousal = () => {
     >
       {/* Slide 1 - MightyOlu Standard */}
       <SwiperSlide>
-        <div className="flex items-center flex-col lg:flex-row h-full pb-14 pt-8 lg:pb-0 lg:pt-0 max-w-[1200px] mx-auto min-h-[500px]">
+        <div className="flex items-center flex-col lg:flex-row h-full pb-14 pt-8 lg:pb-0 lg:pt-0 max-w-[1500px] mx-auto min-h-[500px]">
           
           {/* Left Side: Images & Floating Elements */}
           <div className="w-full lg:w-1/2 flex justify-center items-center relative p-8 lg:p-14">
@@ -36,7 +37,7 @@ const HeroCarousal = () => {
               {/* Main Image */}
               <div className="relative w-full h-[80%] z-10">
                 <Image
-                  src="/images/hero/hero-03.png" // Replace with fish/grocery image if available
+                  src="/banner3.jpg" // Replace with fish/grocery image if available
                   alt="fresh produce"
                   fill
                   className="object-contain drop-shadow-2xl"
@@ -45,12 +46,12 @@ const HeroCarousal = () => {
               </div>
 
               {/* Floating Badge */}
-              <div className="absolute top-[10%] right-[10%] z-20 flex items-center justify-center w-28 h-28 bg-[#C81A1A] text-white rounded-full border-4 border-white shadow-xl rotate-[15deg]">
+              {/* <div className="absolute top-[10%] right-[10%] z-20 flex items-center justify-center w-28 h-28 bg-[#C81A1A] text-white rounded-full border-4 border-white shadow-xl rotate-[15deg]">
                 <div className="text-center">
                   <span className="block text-2xl font-serif italic leading-none">35%</span>
                   <span className="block text-xl font-serif italic leading-none">off</span>
                 </div>
-              </div>
+              </div> */}
 
               {/* Floating Leaves Decor (Optional, using CSS shapes or small img) */}
               <div className="absolute top-[20%] left-[5%] z-20 text-green-500 opacity-80 rotate-45 text-4xl">
@@ -66,7 +67,7 @@ const HeroCarousal = () => {
           <div className="w-full lg:w-1/2 px-8 sm:px-14 lg:px-10 flex flex-col justify-center items-start text-left">
             
             <h1 className="font-bold text-[#0D162B] text-4xl sm:text-6xl leading-[1.1] mb-4">
-              Your Kitchen<br />Starts Here
+              Your Trusted<br />Wholesale Partner
             </h1>
 
             <h2 className="font-bold text-[#56A02C] text-xl sm:text-3xl leading-tight mb-8">
@@ -100,27 +101,27 @@ const HeroCarousal = () => {
               
               <div className="relative w-full h-[80%] z-10">
                 <Image
-                  src="/images/hero/hero-04.png"
+                  src="/banner_5.jpg"
                   alt="fresh fruits"
                   fill
                   className="object-contain drop-shadow-2xl"
                 />
               </div>
 
-              <div className="absolute top-[15%] right-[5%] z-20 flex items-center justify-center w-24 h-24 bg-[#E2A422] text-white rounded-full border-4 border-white shadow-xl -rotate-12">
+              {/* <div className="absolute top-[15%] right-[5%] z-20 flex items-center justify-center w-24 h-24 bg-[#E2A422] text-white rounded-full border-4 border-white shadow-xl -rotate-12">
                 <div className="text-center">
                   <span className="block text-xl font-serif italic leading-none">Best</span>
                   <span className="block text-lg font-serif italic leading-none">Deal</span>
                 </div>
-              </div>
+              </div> */}
 
             </div>
           </div>
 
           <div className="w-full lg:w-1/2 px-8 sm:px-14 lg:px-10 flex flex-col justify-center items-start text-left">
             
-            <h1 className="font-bold text-[#0D162B] text-4xl sm:text-6xl leading-[1.1] mb-4">
-              Premium B2B<br />Supplies
+            <h1 className="font-bold text-[#0D162B] text-xl sm:text-4xl leading-[1.1] mb-4">
+              Premium Business to Business<br />Supplies
             </h1>
 
             <h2 className="font-bold text-[#56A02C] text-xl sm:text-3xl leading-tight mb-8">

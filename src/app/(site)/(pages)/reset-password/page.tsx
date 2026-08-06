@@ -4,7 +4,7 @@ import { ToastContainer } from "react-toastify";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Reset Password | B2B E-commerce",
+  title: "Reset Password | Business to Business E-commerce",
   description: "Reset your password",
 };
 

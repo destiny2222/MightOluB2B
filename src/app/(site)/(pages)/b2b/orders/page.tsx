@@ -63,7 +63,7 @@ const OrdersHistoryPage = () => {
 
   return (
     <main>
-      <Breadcrumb title="Purchase Orders" pages={["Home", "B2B", "Orders"]} />
+      <Breadcrumb title="Purchase Orders" pages={["Home", "Business to Business", "Orders"]} />
 
       <section className="pb-20 pt-10">
         <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">

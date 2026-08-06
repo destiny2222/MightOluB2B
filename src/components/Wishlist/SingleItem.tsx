@@ -65,7 +65,7 @@ const SingleItem = ({ item }: { item: any }) => {
               {item.title}
             </h3>
           </a>
-          <p className="text-gray-5 mt-1 font-medium">${Number(item.discountedPrice ?? item.price).toFixed(2)}</p>
+          <p className="text-gray-5 mt-1 font-medium">£{Number(item.discountedPrice ?? item.price).toFixed(2)}</p>
           
           {/* Mobile-only layout gap */}
           <div className="sm:hidden mt-4 flex items-center gap-4">

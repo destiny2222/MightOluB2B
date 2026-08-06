@@ -54,7 +54,7 @@ const ShippingMethod = ({ rates, selectedRateId, onSelectRate }: ShippingMethodP
 
                 <div className="w-full">
                   <div className="flex flex-col">
-                    <p className="font-semibold text-dark">${Number(rate.price).toFixed(2)}</p>
+                    <p className="font-semibold text-dark">£{Number(rate.price).toFixed(2)}</p>
                     <p className="text-custom-xs text-gray-5">{rate.delivery_type}</p>
                     <p className="text-custom-xs text-gray-4">Weight: {rate.weight_from}g - {rate.weight_to}g</p>
                   </div>

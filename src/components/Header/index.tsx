@@ -140,12 +140,8 @@ const Header = () => {
           stickyMenu ? "h-0 py-0 opacity-0 overflow-hidden border-none" : "h-auto opacity-100"
         }`}
       >
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 flex justify-center sm:justify-between items-center">
-          <div className="hidden sm:block">
-            <span className="font-semibold text-gray-500 tracking-wider uppercase">
-              WELCOME TO  STORE MESSAGE OR REMOVE IT!
-            </span>
-          </div>
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 flex justify-center sm:justify-end items-center">
+          
           <div className="flex items-center gap-4 sm:gap-6 w-full sm:w-auto justify-between sm:justify-end"> 
             {/* Quick Links */}
             <Link href="/contact" className="hover:text-blue transition-colors font-semibold">Contact Us</Link>
@@ -163,7 +159,7 @@ const Header = () => {
                   <span>{user.name}</span>
                   {hasB2BAccess && (
                     <span className="ml-1 px-1.5 py-0.5 bg-blue text-white text-[10px] rounded uppercase font-bold">
-                      {currentView === 'business' ? 'B2B' : 'Retail'}
+                      {currentView === 'business' ? 'Business to Business' : 'Retail'}
                     </span>
                   )}
                   <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -217,7 +213,7 @@ const Header = () => {
                            
                         </>
                       )}
-                      {user.kyc_id && user.kyc?.status !== 'approved' && (
+                      {user.kyc?.id && user.kyc?.status !== 'approved' && (
                         <Link
                           href="/b2b/application-status"
                           onClick={() => setUserMenuOpen(false)}

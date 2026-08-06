@@ -19,7 +19,8 @@ const ApplicationStatus = () => {
     // Don't redirect if still loading auth state
     if (isLoading) return;
 
-    if (!isAuthenticated) {
+    const hasStoredToken = typeof window !== 'undefined' && localStorage.getItem('b2b_token');
+    if (!isAuthenticated && !hasStoredToken) {
       router.replace("/b2b/login");
       return;
     }
@@ -63,7 +64,7 @@ const ApplicationStatus = () => {
             No KYC Application Found
           </h2>
           <p className="text-gray-5 mb-6">
-            You haven't submitted a KYC application yet. Please complete the KYC process to access B2B features.
+            You haven't submitted a KYC application yet. Please complete the KYC process to access Business to Business features.
           </p>
           <Link
             href="/b2b/kyc-setup"
@@ -83,14 +84,14 @@ const ApplicationStatus = () => {
       icon: "⏳",
       color: "bg-yellow-50 border-yellow-200",
       textColor: "text-yellow-800",
-      message: "Your B2B trade account application is currently being reviewed by our team.",
+      message: "Your Business to Business trade account application is currently being reviewed by our team.",
     },
     approved: {
       title: "Application Approved!",
       icon: "✅",
       color: "bg-green-50 border-green-200",
       textColor: "text-green-800",
-      message: "Congratulations! Your B2B trade account has been approved. You now have access to wholesale pricing.",
+      message: "Congratulations! Your Business to Business trade account has been approved. You now have access to wholesale pricing.",
     },
     rejected: {
       title: "Application Rejected",
@@ -113,7 +114,7 @@ const ApplicationStatus = () => {
 
   return (
     <>
-      {/* <Breadcrumb title="Application Status" pages={["B2B", "Application Status"]} /> */}
+      {/* <Breadcrumb title="Application Status" pages={["Business to Business", "Application Status"]} /> */}
       <section className="overflow-hidden pt-75 pb-20 bg-gray-2 min-h-screen">
         <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
           <div className="max-w-[770px] w-full mx-auto rounded-xl bg-white shadow-1 p-4 sm:p-7.5 xl:p-11 relative">

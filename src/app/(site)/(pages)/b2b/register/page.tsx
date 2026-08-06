@@ -3,8 +3,8 @@ import React from "react";
 
 import { Metadata } from "next";
 export const metadata: Metadata = {
-  title: "B2B Registration | Trade Account Signup",
-  description: "Register for a B2B trade account to access wholesale pricing and bulk ordering",
+  title: "Business to Business Registration | Trade Account Signup",
+  description: "Register for a Business to Business trade account to access wholesale pricing and bulk ordering",
 };
 
 const B2BSignupPage = () => {

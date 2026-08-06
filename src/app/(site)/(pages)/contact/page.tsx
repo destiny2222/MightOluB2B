@@ -4,8 +4,8 @@ import { ToastContainer } from "react-toastify";
 
 import { Metadata } from "next";
 export const metadata: Metadata = {
-  title: "Contact Page | B2B  B2B E-commerce",
-  description: "This is Contact Page for B2B  Template",
+  title: "Contact Page | Business to Business E-commerce",
+  description: "Contact the Unifood support desk. Reach out for corporate account setup help, direct farm contract supply, custom logistics routing, or bulk quote requests.",
   // other metadata
 };
 

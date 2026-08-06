@@ -4,8 +4,8 @@ import { ToastContainer } from "react-toastify";
 
 import { Metadata } from "next";
 export const metadata: Metadata = {
-  title: "Cart Page | B2B  B2B E-commerce",
-  description: "This is Cart Page for B2B  Template",
+  title: "Cart Page | Business to Business E-commerce",
+  description: "Review items in your wholesale shopping cart, adjust quantities, and proceed to checkout to finalize your business food supplies order.",
   // other metadata
 };
 
