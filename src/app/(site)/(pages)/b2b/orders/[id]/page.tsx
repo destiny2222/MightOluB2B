@@ -2,80 +2,66 @@
 
 import React, { useEffect, useState } from "react";
 import Breadcrumb from "@/components/Common/Breadcrumb";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { selectCurrentView, selectHasB2BAccess } from "@/redux/features/auth-slice";
+import { 
+  fetchB2BOrderDetails, 
+  setupRecurringOrder,
+  selectB2BCurrentOrder,
+  selectB2BOrderDetailsStatus,
+  selectB2BRecurringStatus,
+  clearCurrentOrder
+} from "@/redux/features/b2b-orders-slice";
 import { useParams, useRouter } from "next/navigation";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
+import { AppDispatch } from "@/redux/store";
 
 const OrderDetailPage = () => {
   const { id } = useParams();
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
+  
   const currentView = useSelector(selectCurrentView);
   const hasB2BAccess = useSelector(selectHasB2BAccess);
   const isB2B = hasB2BAccess && currentView === 'business';
 
-  const [order, setOrder] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const order = useSelector(selectB2BCurrentOrder);
+  const detailsStatus = useSelector(selectB2BOrderDetailsStatus);
+  const recurringStatus = useSelector(selectB2BRecurringStatus);
+  
+  const loading = detailsStatus === 'loading' || detailsStatus === 'idle';
   
   // Recurring Schedule State
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [frequency, setFrequency] = useState('weekly');
-  const [isScheduling, setIsScheduling] = useState(false);
+  const isScheduling = recurringStatus === 'scheduling';
 
   useEffect(() => {
     if (isB2B && id) {
-      fetchOrderDetails();
-    } else {
-      setLoading(false);
+      dispatch(fetchB2BOrderDetails(id as string))
+        .unwrap()
+        .catch((err) => {
+          toast.error(err || "Failed to load order details");
+          router.push("/b2b/orders");
+        });
     }
-  }, [isB2B, id]);
-
-  const fetchOrderDetails = async () => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_LARAVEL_URL}/api/v1/b2b/orders/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setOrder(data.order);
-      } else {
-        toast.error("Failed to load order details");
-        router.push("/b2b/orders");
-      }
-    } catch (error) {
-      console.error("Failed to fetch order details", error);
-      toast.error("An error occurred");
-    } finally {
-      setLoading(false);
-    }
-  };
+    
+    return () => {
+      dispatch(clearCurrentOrder());
+    };
+  }, [isB2B, id, dispatch, router]);
 
   const handleSetupRecurring = async () => {
-    setIsScheduling(true);
+    if (!id) return;
+    
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_LARAVEL_URL}/api/v1/b2b/orders/${id}/recurring`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({ frequency })
-      });
-
-      if (response.ok) {
-        toast.success(`Recurring order scheduled ${frequency}!`);
-        setShowScheduleModal(false);
-        fetchOrderDetails(); // Refresh to show it's recurring now
-      } else {
-        const err = await response.json();
-        toast.error(err.message || "Failed to setup schedule");
-      }
-    } catch (error) {
-      toast.error("An error occurred while scheduling");
-    } finally {
-      setIsScheduling(false);
+      await dispatch(setupRecurringOrder({ id: id as string, frequency })).unwrap();
+      toast.success(`Recurring order scheduled ${frequency}!`);
+      setShowScheduleModal(false);
+      // It optimistically updates or you could re-fetch:
+      // dispatch(fetchB2BOrderDetails(id as string));
+    } catch (err: any) {
+      toast.error(err || "Failed to setup schedule");
     }
   };
 

@@ -1,4 +1,6 @@
 import Contact from "@/components/Contact";
+import { ToastContainer } from "react-toastify";
+
 
 import { Metadata } from "next";
 export const metadata: Metadata = {
@@ -10,6 +12,18 @@ export const metadata: Metadata = {
 const ContactPage = () => {
   return (
     <main>
+      <ToastContainer 
+       position="top-right"
+       autoClose={3000}
+       hideProgressBar={false}
+       newestOnTop={false}
+       closeOnClick
+       rtl={false}
+       pauseOnFocusLoss
+       draggable
+       pauseOnHover
+       theme="colored"
+      />
       <Contact />
     </main>
   );

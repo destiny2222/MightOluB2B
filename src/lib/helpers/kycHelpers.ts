@@ -1,6 +1,6 @@
 import { AppDispatch } from "@/redux/store";
 import { addToCartAsync } from "@/redux/features/cart-slice";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 interface KYCCheckParams {

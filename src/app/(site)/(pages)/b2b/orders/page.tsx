@@ -2,44 +2,30 @@
 
 import React, { useEffect, useState } from "react";
 import Breadcrumb from "@/components/Common/Breadcrumb";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { selectCurrentView, selectHasB2BAccess } from "@/redux/features/auth-slice";
+import { fetchB2BOrders, selectB2BOrders, selectB2BOrdersStatus } from "@/redux/features/b2b-orders-slice";
+import { AppDispatch } from "@/redux/store";
 import Link from "next/link";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 
 const OrdersHistoryPage = () => {
+  const dispatch = useDispatch<AppDispatch>();
   const currentView = useSelector(selectCurrentView);
   const hasB2BAccess = useSelector(selectHasB2BAccess);
   const isB2B = hasB2BAccess && currentView === 'business';
 
-  const [orders, setOrders] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const orders = useSelector(selectB2BOrders) || [];
+  const status = useSelector(selectB2BOrdersStatus);
+  const loading = status === 'loading' || status === 'idle';
 
   useEffect(() => {
     if (isB2B) {
-      fetchOrders();
-    } else {
-      setLoading(false);
-    }
-  }, [isB2B]);
-
-  const fetchOrders = async () => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_LARAVEL_URL}/api/v1/b2b/orders`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        }
+      dispatch(fetchB2BOrders()).unwrap().catch((err) => {
+        toast.error(err || "Failed to fetch orders");
       });
-      if (response.ok) {
-        const data = await response.json();
-        setOrders(data.orders);
-      }
-    } catch (error) {
-      console.error("Failed to fetch orders", error);
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [isB2B, dispatch]);
 
   const handleReorder = async (orderId: string) => {
     // In a real app, this would fetch the latest prices for items in the PO

@@ -160,14 +160,14 @@ export interface UpdateCartResponse {
 }
 
 // Helper function to get auth headers
-const getAuthHeaders = (token?: string | null): HeadersInit => {
+export const getAuthHeaders = (token?: string | null): HeadersInit => {
   const headers: HeadersInit = {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
   };
 
   const authToken = token || (typeof window !== 'undefined' ? localStorage.getItem('b2b_token') : null);
-  
+
   if (authToken) {
     headers['Authorization'] = `Bearer ${authToken}`;
   }
@@ -179,7 +179,7 @@ const getAuthHeaders = (token?: string | null): HeadersInit => {
 async function handleResponse<T>(response: Response): Promise<T> {
   const contentType = response.headers.get('content-type');
   const isJson = contentType?.includes('application/json');
-  
+
   const data = isJson ? await response.json() : await response.text();
 
   if (!response.ok) {
@@ -430,7 +430,7 @@ export async function updateB2BCartItem(cartItemId: number, data: UpdateCartData
   return handleResponse(response);
 }
 
-export async function deleteB2BCartItem(cartItemId: number, token?: string): Promise<{message: string}> {
+export async function deleteB2BCartItem(cartItemId: number, token?: string): Promise<{ message: string }> {
   const response = await fetch(`${API_BASE_URL}${API_VERSION}/cart/${cartItemId}`, {
     method: 'DELETE',
     headers: getAuthHeaders(token),
@@ -438,9 +438,157 @@ export async function deleteB2BCartItem(cartItemId: number, token?: string): Pro
   return handleResponse(response);
 }
 
-export async function clearB2BCart(token?: string): Promise<{message: string}> {
+export async function clearB2BCart(token?: string): Promise<{ message: string }> {
   const response = await fetch(`${API_BASE_URL}${API_VERSION}/cart`, {
     method: 'DELETE',
+    headers: getAuthHeaders(token),
+  });
+  return handleResponse(response);
+}
+
+
+
+// ==================== WISHLIST ENDPOINTS ====================
+
+export interface B2BWishlistItem {
+  id: string;
+  product_id: number;
+  title: string;
+  slug: string;
+  image: string;
+  product_images?: string[];
+  standard_price: number;
+  trade_price: number;
+  minimum_order_quantity?: number;
+  category?: string;
+  added_at?: string;
+}
+
+export interface B2BWishlistResponse {
+  success: boolean;
+  data: B2BWishlistItem[];
+}
+
+export async function getB2BWishlist(token?: string): Promise<B2BWishlistResponse> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/wishlist`, {
+    method: 'GET',
+    headers: getAuthHeaders(token),
+  });
+  return handleResponse(response);
+}
+
+export async function addToB2BWishlist(
+  productId: number,
+  token?: string
+): Promise<{ success: boolean; message: string; data?: any }> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/wishlist`, {
+    method: 'POST',
+    headers: getAuthHeaders(token),
+    body: JSON.stringify({ product_id: productId }),
+  });
+  return handleResponse(response);
+}
+
+export async function removeFromB2BWishlist(
+  wishlistId: string,
+  token?: string
+): Promise<{ success: boolean; message: string }> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/wishlist/${wishlistId}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(token),
+  });
+  return handleResponse(response);
+}
+
+export async function moveWishlistToCart(
+  wishlistId: string,
+  data: { quantity?: number; size_variant?: string } = {},
+  token?: string
+): Promise<any> {
+  const response = await fetch(
+    `${API_BASE_URL}${API_VERSION}/b2b/wishlist/${wishlistId}/move-to-cart`,
+    {
+      method: 'POST',
+      headers: getAuthHeaders(token),
+      body: JSON.stringify(data),
+    }
+  );
+  return handleResponse(response);
+}
+
+// ==================== SHIPPING ADDRESS ENDPOINTS ====================
+
+export interface ShippingAddress {
+  id: number;
+  user_id: string;
+  label?: string;
+  company_name?: string;
+  contact_name?: string;
+  phone?: string;
+  address_line_1: string;
+  address_line_2?: string;
+  city: string;
+  state?: string;
+  postal_code: string;
+  country: string;
+  is_default: boolean;
+  delivery_instructions?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ShippingAddressData {
+  label?: string;
+  company_name?: string;
+  contact_name?: string;
+  phone?: string;
+  address_line_1: string;
+  address_line_2?: string;
+  city: string;
+  state?: string;
+  postal_code: string;
+  country: string;
+  is_default?: boolean;
+  delivery_instructions?: string;
+}
+
+export async function getShippingAddresses(token?: string): Promise<{ success: boolean; data: ShippingAddress[] }> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/shipping-addresses`, {
+    method: 'GET',
+    headers: getAuthHeaders(token),
+  });
+  return handleResponse(response);
+}
+
+export async function addShippingAddress(data: ShippingAddressData, token?: string): Promise<{ success: boolean; message: string; data: ShippingAddress }> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/shipping-addresses`, {
+    method: 'POST',
+    headers: getAuthHeaders(token),
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function updateShippingAddress(id: number, data: Partial<ShippingAddressData>, token?: string): Promise<{ success: boolean; message: string; data: ShippingAddress }> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/shipping-addresses/${id}`, {
+    method: 'PUT',
+    headers: getAuthHeaders(token),
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function deleteShippingAddress(id: number, token?: string): Promise<{ success: boolean; message: string }> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/shipping-addresses/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(token),
+  });
+  return handleResponse(response);
+}
+
+export async function setDefaultShippingAddress(id: number, token?: string): Promise<{ success: boolean; message: string; data: ShippingAddress }> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/shipping-addresses/${id}/set-default`, {
+    method: 'POST',
     headers: getAuthHeaders(token),
   });
   return handleResponse(response);
@@ -498,4 +646,60 @@ export function hasB2BAccess(user: User | null): boolean {
  */
 export function isBusinessOwner(user: User | null): boolean {
   return !!(user?.is_business_owner);
+}
+
+export async function updateUserProfile(data: { first_name: string; last_name: string; email: string }, token?: string): Promise<{ success: boolean; message: string; data?: any }> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/profile`, {
+    method: "PUT",
+    headers: getAuthHeaders(token),
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function changeUserPassword(data: any, token?: string): Promise<{ success: boolean; message: string }> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/change-password`, {
+    method: "PUT",
+    headers: getAuthHeaders(token),
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function forgotPassword(data: { email: string }): Promise<{ success: boolean; message: string }> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/forgot-password`, {
+    method: "POST",
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function resetPassword(data: any): Promise<{ success: boolean; message: string }> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/reset-password`, {
+    method: "POST",
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(response);
+}
+
+export async function getPurchaseOrders(): Promise<{ orders: any[] }> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/b2b/orders`, {
+    headers: getAuthHeaders(),
+  });
+  return handleResponse(response);
+}
+
+export async function getPurchaseOrderDetails(id: string | number): Promise<{ order: any }> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/b2b/orders/${id}`, {
+    headers: getAuthHeaders(),
+  });
+  return handleResponse(response);
 }

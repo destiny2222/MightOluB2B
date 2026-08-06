@@ -8,16 +8,17 @@ import {
 
 import Image from "next/image";
 
-const SingleItem = ({ item }) => {
+const SingleItem = ({ item, allProducts }: { item: any, allProducts?: any[] }) => {
   const [quantity, setQuantity] = useState(item.quantity);
 
   const dispatch = useDispatch<AppDispatch>();
-
-  console.log("SingleItem item:", item); // Debugging line
-
+ 
   const handleRemoveFromCart = () => {
     dispatch(removeFromCartAsync({ id: item.id, cartItemId: item.cartItemId }));
   };
+
+  const product = allProducts?.find((p: any) => p.id === item.id);
+  const minQty = product?.minimum_order_quantity || item.minimum_order_quantity || 1;
 
   const handleIncreaseQuantity = () => {
     setQuantity(quantity + 1);
@@ -25,11 +26,20 @@ const SingleItem = ({ item }) => {
   };
 
   const handleDecreaseQuantity = () => {
-    if (quantity > 1) {
+    if (quantity > minQty) {
       setQuantity(quantity - 1);
       dispatch(updateQuantityAsync({ id: item.id, quantity: quantity - 1, cartItemId: item.cartItemId }));
-    } else {
-      return;
+    }
+  };
+
+  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value);
+    if (!isNaN(value) && value >= minQty) {
+      setQuantity(value);
+      dispatch(updateQuantityAsync({ id: item.id, quantity: value, cartItemId: item.cartItemId }));
+    } else if (!isNaN(value) && value < minQty) {
+      setQuantity(minQty);
+      dispatch(updateQuantityAsync({ id: item.id, quantity: minQty, cartItemId: item.cartItemId }));
     }
   };
 
@@ -85,15 +95,18 @@ const SingleItem = ({ item }) => {
       </div>
 
       <div className="min-w-[120px]">
-        <p className="text-dark">${item.discountedPrice}</p>
+        <p className="text-dark">${Number(item.discountedPrice).toFixed(2)}</p>
       </div>
 
       <div className="min-w-[180px]">
         <div className="w-max flex items-center rounded-md border border-gray-3">
           <button
             onClick={() => handleDecreaseQuantity()}
+            disabled={quantity <= minQty}
             aria-label="button for remove product"
-            className="flex items-center justify-center w-11.5 h-11.5 ease-out duration-200 hover:text-blue"
+            className={`flex items-center justify-center w-11.5 h-11.5 ease-out duration-200 ${
+              quantity <= minQty ? 'text-gray-4 cursor-not-allowed' : 'hover:text-blue'
+            }`}
           >
             <svg
               className="fill-current"
@@ -110,9 +123,20 @@ const SingleItem = ({ item }) => {
             </svg>
           </button>
 
-          <span className="flex items-center justify-center w-16 h-11.5 border-x border-gray-4">
-            {quantity}
-          </span>
+          <input
+            type="number"
+            value={quantity}
+            onChange={handleQuantityChange}
+            onBlur={(e) => {
+              const value = parseInt(e.target.value);
+              if (isNaN(value) || value < minQty) {
+                setQuantity(minQty);
+                dispatch(updateQuantityAsync({ id: item.id, quantity: minQty, cartItemId: item.cartItemId }));
+              }
+            }}
+            min={minQty}
+            className="w-16 h-11.5 border-x border-gray-4 text-center bg-transparent outline-none focus:bg-gray-2 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          />
 
           <button
             onClick={() => handleIncreaseQuantity()}
@@ -141,7 +165,7 @@ const SingleItem = ({ item }) => {
       </div>
 
       <div className="min-w-[120px]">
-        <p className="text-dark">${item.discountedPrice * quantity}</p>
+        <p className="text-dark">${Number(item.discountedPrice * quantity).toFixed(2)}</p>
       </div>
 
       <div className="min-w-[50px] flex justify-end">

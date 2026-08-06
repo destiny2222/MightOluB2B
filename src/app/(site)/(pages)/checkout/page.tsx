@@ -2,6 +2,7 @@ import React from "react";
 import Checkout from "@/components/Checkout";
 
 import { Metadata } from "next";
+import { ToastContainer } from "react-toastify";
 export const metadata: Metadata = {
   title: "Checkout Page | B2B  B2B E-commerce",
   description: "This is Checkout Page for B2B  Template",
@@ -11,6 +12,18 @@ export const metadata: Metadata = {
 const CheckoutPage = () => {
   return (
     <main>
+      <ToastContainer 
+       position="top-right"
+       autoClose={3000}
+       hideProgressBar={false}
+       newestOnTop={false}
+       closeOnClick
+       rtl={false}
+       pauseOnFocusLoss
+       draggable
+       pauseOnHover
+       theme="colored"
+      />
       <Checkout />
     </main>
   );

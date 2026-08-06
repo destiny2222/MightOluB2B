@@ -13,6 +13,9 @@ import QuickViewModal from "@/components/Common/QuickViewModal";
 import CartSidebarModal from "@/components/Common/CartSidebarModal";
 import { PreviewSliderProvider } from "../context/PreviewSliderContext";
 import PreviewSliderModal from "@/components/Common/PreviewSlider";
+import { ChatbotProvider } from "../context/ChatbotContext";
+import { ChatBotButton, ChatBotPanel } from "@/components/ChatBot";
+
 
 import ScrollToTop from "@/components/Common/ScrollToTop";
 import PreLoader from "@/components/Common/PreLoader";
@@ -33,12 +36,13 @@ export default function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning={true}>
-      <body>
+      <body suppressHydrationWarning={true}>
         {loading ? (
           <PreLoader />
         ) : (
-          <>
-            <ReduxProvider>
+          <> 
+          <ReduxProvider>
+            <ChatbotProvider>
               <GlobalKYCGuard />
               <CartModalProvider>
                 <ModalProvider>
@@ -49,15 +53,19 @@ export default function RootLayout({
                     {!isKYCSetupPage && <QuickViewModal />}
                     {!isKYCSetupPage && <CartSidebarModal />}
                     {!isKYCSetupPage && <PreviewSliderModal />}
+                    {!isKYCSetupPage && <ChatBotButton />}
+                    {!isKYCSetupPage && <ChatBotPanel />}
                   </PreviewSliderProvider>
                 </ModalProvider>
               </CartModalProvider>
-            </ReduxProvider>
-            <ScrollToTop />
-            {!isKYCSetupPage && <Footer />}
+            </ChatbotProvider>
+          </ReduxProvider>
+          <ScrollToTop />
+          {!isKYCSetupPage && <Footer />}
           </>
         )}
       </body>
     </html>
   );
 }
+

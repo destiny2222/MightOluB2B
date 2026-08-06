@@ -12,7 +12,7 @@ import {
   clearSuccessMessage
 } from "@/redux/features/kyc-slice";
 import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 
 import { useForm } from "@tanstack/react-form";
 import { zodValidator } from "@tanstack/zod-form-adapter";
@@ -77,7 +77,7 @@ const KYCSetup = () => {
     estimated_monthly_order_volume: isResubmission && user?.kyc?.estimated_monthly_order_volume ? user.kyc.estimated_monthly_order_volume : "",
   };
 
-  const form = useForm({
+  const form: any = useForm({
     defaultValues,
     validatorAdapter: zodValidator(),
 
@@ -128,7 +128,7 @@ const KYCSetup = () => {
         }
       }
     }
-  });
+  } as any);
 
 
   const handleLogout = () => {

@@ -2,7 +2,7 @@ import React from "react";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/redux/store";
 import { removeFromCartAsync } from "@/redux/features/cart-slice";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 import Image from "next/image";
 
 const SingleItem = ({ item }) => {
@@ -61,7 +61,10 @@ const SingleItem = ({ item }) => {
           <h3 className="font-medium text-dark mb-1 ease-out duration-200 hover:text-blue">
             <a href="#"> {item.title} </a>
           </h3>
-          <p className="text-custom-sm">Price: ${item.discountedPrice}</p>
+          <p className="text-custom-sm">
+            Price: ${Number(item.discountedPrice).toFixed(2)}
+            <span className="text-dark-5 ml-2 bg-gray-2 px-1.5 py-0.5 rounded text-xs">Qty: {item.quantity}</span>
+          </p>
         </div>
       </div>
 

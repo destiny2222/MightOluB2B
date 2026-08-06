@@ -2,16 +2,35 @@
 import React from "react";
 import Discount from "./Discount";
 import OrderSummary from "./OrderSummary";
-import { useAppSelector } from "@/redux/store";
+import { useAppSelector, useAppDispatch } from "@/redux/store";
 import SingleItem from "./SingleItem";
 import Breadcrumb from "../Common/Breadcrumb";
 import Link from "next/link";
+import { useProducts } from "@/hooks/useProducts";
+import { selectTotalPrice } from "@/redux/features/cart-slice";
+import { ToastContainer } from "react-toastify";
 
 const Cart = () => {
+  const dispatch = useAppDispatch();
   const cartItems = useAppSelector((state) => state.cartReducer.items);
+  const totalPrice = useAppSelector(selectTotalPrice);
+  const { products } = useProducts();
 
   return (
     <>
+      {/* <!-- ===== Toast Container Start ===== --> */}
+      <ToastContainer 
+       position="top-right"
+       autoClose={3000}
+       hideProgressBar={false}
+       newestOnTop={false}
+       closeOnClick
+       rtl={false}
+       pauseOnFocusLoss
+       draggable
+       pauseOnHover
+       theme="colored"
+      />
       {/* <!-- ===== Breadcrumb Section Start ===== --> */}
       <section>
         <Breadcrumb title={"Cart"} pages={["Cart"]} />
@@ -22,7 +41,6 @@ const Cart = () => {
           <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
             <div className="flex flex-wrap items-center justify-between gap-5 mb-7.5">
               <h2 className="font-medium text-dark text-2xl">Your Cart</h2>
-              <button className="text-blue">Clear Shopping Cart</button>
             </div>
 
             <div className="flex flex-col lg:flex-row gap-7.5 xl:gap-11">
@@ -56,8 +74,8 @@ const Cart = () => {
 
                       {/* <!-- cart item --> */}
                       {cartItems.length > 0 &&
-                        cartItems.map((item, key) => (
-                          <SingleItem item={item} key={key} />
+                        cartItems.map((item: any, key: number) => (
+                          <SingleItem item={item} key={key} allProducts={products} />
                         ))}
                     </div>
                   </div>

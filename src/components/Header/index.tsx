@@ -17,7 +17,7 @@ import {
   switchView
 } from "@/redux/features/auth-slice";
 import Image from "next/image";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 import logo from "../../../public/images/logo/logo.png";
 
 const Header = () => {
@@ -31,7 +31,8 @@ const Header = () => {
 
   const product = useAppSelector((state) => state.cartReducer.items);
   const totalPrice = useSelector(selectTotalPrice);
-  
+  const wishlist = useAppSelector((state) => state.wishlistReducer.items);
+
   // B2B Auth selectors
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const user = useSelector(selectUser);
@@ -136,79 +137,13 @@ const Header = () => {
           stickyMenu ? "h-0 py-0 opacity-0 overflow-hidden border-none" : "h-auto opacity-100"
         }`}
       >
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 flex justify-between items-center">
-          <div>
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 flex justify-center sm:justify-between items-center">
+          <div className="hidden sm:block">
             <span className="font-semibold text-gray-500 tracking-wider uppercase">
               WELCOME TO  STORE MESSAGE OR REMOVE IT!
             </span>
           </div>
-          <div className="flex items-center gap-6">
-            {/* Currency Selector */}
-            <div className="relative" ref={currencyRef}>
-              <button
-                onClick={() => setCurrencyOpen(!currencyOpen)}
-                className="flex items-center gap-1 hover:text-blue font-semibold transition-colors duration-200"
-              >
-                {currency}
-                <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              {currencyOpen && (
-                <div className="absolute right-0 mt-1.5 w-20 bg-white border border-gray-3 shadow-lg rounded-md overflow-hidden z-999">
-                  {["USD", "EUR", "GBP"].map((curr) => (
-                    <button
-                      key={curr}
-                      onClick={() => {
-                        setCurrency(curr);
-                        setCurrencyOpen(false);
-                      }}
-                      className="block w-full text-left px-3 py-1.5 hover:bg-gray-1 hover:text-blue transition-colors font-medium"
-                    >
-                      {curr}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Language Selector */}
-            <div className="relative" ref={langRef}>
-              <button
-                onClick={() => setLangOpen(!langOpen)}
-                className="flex items-center gap-1 hover:text-blue font-semibold transition-colors duration-200"
-              >
-                <span className="mr-0.5">{lang.flag}</span>
-                <span>{lang.code}</span>
-                <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              {langOpen && (
-                <div className="absolute right-0 mt-1.5 w-24 bg-white border border-gray-3 shadow-lg rounded-md overflow-hidden z-999">
-                  {[
-                    { code: "ENG", flag: "🇺🇸" },
-                    { code: "FRA", flag: "🇫🇷" },
-                    { code: "GER", flag: "🇩🇪" }
-                  ].map((l) => (
-                    <button
-                      key={l.code}
-                      onClick={() => {
-                        setLang(l);
-                        setLangOpen(false);
-                      }}
-                      className="flex items-center gap-2 w-full text-left px-3 py-1.5 hover:bg-gray-1 hover:text-blue transition-colors font-medium"
-                    >
-                      <span>{l.flag}</span>
-                      <span>{l.code}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <span className="w-px h-3.5 bg-gray-4"></span>
-            
+          <div className="flex items-center gap-4 sm:gap-6 w-full sm:w-auto justify-between sm:justify-end"> 
             {/* Quick Links */}
             <Link href="/contact" className="hover:text-blue transition-colors font-semibold">Contact Us</Link>
             
@@ -248,13 +183,13 @@ const Header = () => {
                       </Link>
                       {hasB2BAccess && (
                         <>
-                          <Link
+                          {/* <Link
                             href="/b2b/business-profile"
                             onClick={() => setUserMenuOpen(false)}
                             className="block px-4 py-2 text-sm hover:bg-gray-1 transition-colors"
                           >
                             Business Profile
-                          </Link>
+                          </Link> */}
                           <Link
                             href="/b2b/rfq/history"
                             onClick={() => setUserMenuOpen(false)}
@@ -276,15 +211,7 @@ const Header = () => {
                           >
                             Recurring Drafts
                           </Link>
-                          <button
-                            onClick={handleSwitchView}
-                            className="w-full text-left px-4 py-2 text-sm hover:bg-gray-1 transition-colors flex items-center justify-between"
-                          >
-                            <span>Switch to {currentView === 'personal' ? 'Business' : 'Personal'}</span>
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                            </svg>
-                          </button>
+                           
                         </>
                       )}
                       {user.kyc_id && user.kyc?.status !== 'approved' && (
@@ -369,22 +296,17 @@ const Header = () => {
               href="/wishlist"
               className="flex flex-col items-center hover:-translate-y-0.5 hover:text-blue transition-all duration-300 group"
             >
-              <svg className="w-6.5 h-6.5 text-dark group-hover:text-blue transition-colors duration-200" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
+              <div className="relative">
+                <svg className="w-6.5 h-6.5 text-dark group-hover:text-blue transition-colors duration-200" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+                <span className="flex items-center justify-center font-bold text-[10px] absolute -right-2 -top-1 bg-red text-white w-4.5 h-4.5 rounded-full shadow-sm group-hover:scale-110 transition-transform">
+                  {wishlist?.length}
+                </span>
+              </div>
               <span className="text-[11px] text-dark group-hover:text-blue font-semibold mt-1 transition-colors">Wishlist</span>
             </Link>
-
-            {/* Compare */}
-            <Link
-              href="#"
-              className="flex flex-col items-center hover:-translate-y-0.5 hover:text-blue transition-all duration-300 group"
-            >
-              <svg className="w-6.5 h-6.5 text-dark group-hover:text-blue transition-colors duration-200" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
-              </svg>
-              <span className="text-[11px] text-dark group-hover:text-blue font-semibold mt-1 transition-colors">Compare</span>
-            </Link>
+ 
 
             {/* Cart */}
             <button
@@ -573,7 +495,7 @@ const Header = () => {
 
           {/* Navigation Links */}
           <p className="text-2xs font-bold text-gray-5 uppercase tracking-wider mb-2.5">Navigation</p>
-          <ul className="flex flex-col gap-4 border-b border-gray-2 pb-4 mb-4">
+          <ul className="flex flex-col gap-4 pb-4 ">
             {menuData.map((menuItem, idx) => (
               <li key={idx} className="font-bold text-custom-sm text-dark">
                 {menuItem.submenu ? (
@@ -604,23 +526,7 @@ const Header = () => {
                 )}
               </li>
             ))}
-          </ul>
-
-          {/* Categories List for Mobile */}
-          <p className="text-2xs font-bold text-gray-5 uppercase tracking-wider mb-2.5">Categories</p>
-          <ul className="flex flex-col gap-3 pb-2">
-            {categoriesList.map((cat, idx) => (
-              <li key={idx}>
-                <Link
-                  href={`/product?category=${cat}`}
-                  onClick={() => setNavigationOpen(false)}
-                  className="text-custom-sm text-dark font-medium hover:text-blue transition-colors"
-                >
-                  {cat}
-                </Link>
-              </li>
-            ))}
-          </ul>
+          </ul> 
         </div>
       )}
     </header>
