@@ -140,12 +140,8 @@ const Header = () => {
           stickyMenu ? "h-0 py-0 opacity-0 overflow-hidden border-none" : "h-auto opacity-100"
         }`}
       >
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 flex justify-center sm:justify-between items-center">
-          <div className="hidden sm:block">
-            <span className="font-semibold text-gray-500 tracking-wider uppercase">
-              WELCOME TO  STORE MESSAGE OR REMOVE IT!
-            </span>
-          </div>
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 flex justify-center sm:justify-end items-center">
+          
           <div className="flex items-center gap-4 sm:gap-6 w-full sm:w-auto justify-between sm:justify-end"> 
             {/* Quick Links */}
             <Link href="/contact" className="hover:text-blue transition-colors font-semibold">Contact Us</Link>
