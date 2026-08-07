@@ -96,7 +96,7 @@ const Hero = () => {
                 {/* CTAs */}
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 mb-6">
                   <Link
-                    href="/signin"
+                    href="/signup"
                     className="bg-[#5ca815] hover:bg-[#4d900f] text-white font-extrabold px-6 py-3.5 rounded-md text-xs sm:text-sm uppercase tracking-wider transition-colors text-center shadow-md"
                   >
                     APPLY FOR BUSINESS ACCOUNT
