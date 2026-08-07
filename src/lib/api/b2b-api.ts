@@ -17,12 +17,51 @@ export interface LoginData {
 }
 
 export interface KYCData {
-  company_name: string;
-  company_registration_number: string;
-  business_type: 'restaurant' | 'retailer' | 'caterer' | 'reseller' | 'other';
-  trade_address: string;
-  billing_contact: string;
-  estimated_monthly_order_volume: string;
+  registered_business_name?: string;
+  company_name?: string;
+  trading_name?: string;
+  business_type: 'sole_trader' | 'limited_company' | 'partnership' | 'charity_non_profit' | 'restaurant' | 'retailer' | 'caterer' | 'reseller' | 'other' | string;
+  company_registration_number?: string;
+  vat_registration_number?: string;
+  date_business_established?: string;
+  nature_of_business?: string;
+  business_website?: string;
+
+  address_line_1?: string;
+  address_line_2?: string;
+  city?: string;
+  postcode?: string;
+  country?: string;
+  trade_address?: string;
+
+  primary_contact_name?: string;
+  primary_contact_position?: string;
+  primary_contact_email?: string;
+  primary_contact_phone?: string;
+  preferred_contact_method?: 'email' | 'telephone' | string;
+  billing_contact?: string;
+
+  owner_full_name?: string;
+  owner_position?: string;
+  owner_nationality?: string;
+  owner_dob?: string;
+  owner_residential_address?: string;
+
+  certificate_of_incorporation?: any;
+  proof_of_business_address?: any;
+  vat_registration_certificate?: any;
+  business_bank_statement?: any;
+  government_id?: any;
+  proof_of_residential_address?: any;
+  partnership_agreement?: any;
+  sole_trader_evidence?: any;
+  other_documents?: any;
+
+  primary_products_of_interest?: string;
+  estimated_monthly_purchase_value?: string;
+  estimated_monthly_order_volume?: string;
+  expected_order_frequency?: 'weekly' | 'fortnightly' | 'monthly' | 'ad_hoc' | string;
+  purpose_of_purchase?: 'retail_resale' | 'restaurant_catering' | 'distribution' | 'hospitality' | 'corporate_use' | 'other' | string;
 }
 
 export interface UpdateBusinessProfileData {
@@ -40,18 +79,52 @@ export interface AddAuthorizedBuyerData {
 
 export interface KYC {
   id: number;
-  user_id: string;
-  company_name: string;
-  company_registration_number: string;
-  business_type: string;
-  trade_address: string;
-  billing_contact: string;
-  estimated_monthly_order_volume: string;
+  user_id?: string;
+  company_name?: string;
+  registered_business_name?: string;
+  trading_name?: string;
+  business_type?: string;
+  company_registration_number?: string | null;
+  vat_registration_number?: string | null;
+  date_business_established?: string | null;
+  nature_of_business?: string | null;
+  business_website?: string | null;
+  trade_address?: string;
+  address_line_1?: string;
+  address_line_2?: string;
+  city?: string;
+  postcode?: string;
+  country?: string;
+  billing_contact?: string;
+  primary_contact_name?: string;
+  primary_contact_position?: string;
+  primary_contact_email?: string;
+  primary_contact_phone?: string;
+  preferred_contact_method?: string;
+  owner_full_name?: string;
+  owner_position?: string;
+  owner_nationality?: string;
+  owner_dob?: string;
+  owner_residential_address?: string;
+  certificate_of_incorporation?: string | null;
+  proof_of_business_address?: string | null;
+  vat_registration_certificate?: string | null;
+  business_bank_statement?: string | null;
+  government_id?: string | null;
+  proof_of_residential_address?: string | null;
+  partnership_agreement?: string | null;
+  sole_trader_evidence?: string | null;
+  other_documents?: string | null;
+  primary_products_of_interest?: string | null;
+  estimated_monthly_purchase_value?: string | null;
+  estimated_monthly_order_volume?: string | null;
+  expected_order_frequency?: string | null;
+  purpose_of_purchase?: string | null;
   status: 'pending' | 'approved' | 'rejected' | 'info_requested';
-  pricing_tier?: string;
-  status_notes?: string;
-  created_at: string;
-  updated_at: string;
+  pricing_tier?: string | null;
+  status_notes?: string | null;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface User {
@@ -160,11 +233,14 @@ export interface UpdateCartResponse {
 }
 
 // Helper function to get auth headers
-export const getAuthHeaders = (token?: string | null): HeadersInit => {
-  const headers: HeadersInit = {
+export const getAuthHeaders = (token?: string | null, isFormData = false): HeadersInit => {
+  const headers: Record<string, string> = {
     'Accept': 'application/json',
-    'Content-Type': 'application/json',
   };
+
+  if (!isFormData) {
+    headers['Content-Type'] = 'application/json';
+  }
 
   const authToken = token || (typeof window !== 'undefined' ? localStorage.getItem('b2b_token') : null);
 
@@ -244,16 +320,19 @@ export function logoutB2B(): void {
 
 /**
  * Submit KYC details for trade account approval
+ * Supports application/json or multipart/form-data for document attachments.
  */
-export async function submitKYC(data: KYCData, token?: string): Promise<{
+export async function submitKYC(data: KYCData | FormData, token?: string): Promise<{
   message: string;
-  kyc: KYC;
-  user: User;
+  data?: KYC;
+  kyc?: KYC;
+  user?: User;
 }> {
+  const isFormData = typeof FormData !== 'undefined' && data instanceof FormData;
   const response = await fetch(`${API_BASE_URL}${API_VERSION}/kyc`, {
     method: 'POST',
-    headers: getAuthHeaders(token),
-    body: JSON.stringify(data),
+    headers: getAuthHeaders(token, isFormData),
+    body: isFormData ? (data as FormData) : JSON.stringify(data),
   });
 
   return handleResponse(response);
@@ -261,15 +340,18 @@ export async function submitKYC(data: KYCData, token?: string): Promise<{
 
 /**
  * Resubmit KYC details after rejection or info request
+ * Supports application/json or multipart/form-data for document attachments.
  */
-export async function resubmitKYC(data: KYCData, token?: string): Promise<{
+export async function resubmitKYC(data: KYCData | FormData, token?: string): Promise<{
   message: string;
-  kyc: KYC;
+  kyc?: KYC;
+  data?: KYC;
 }> {
+  const isFormData = typeof FormData !== 'undefined' && data instanceof FormData;
   const response = await fetch(`${API_BASE_URL}${API_VERSION}/resubmit`, {
     method: 'POST',
-    headers: getAuthHeaders(token),
-    body: JSON.stringify(data),
+    headers: getAuthHeaders(token, isFormData),
+    body: isFormData ? (data as FormData) : JSON.stringify(data),
   });
 
   return handleResponse(response);
