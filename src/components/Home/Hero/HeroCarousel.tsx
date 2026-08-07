@@ -120,7 +120,7 @@ const HeroCarousal = () => {
           <div className="w-full lg:w-1/2 px-8 sm:px-14 lg:px-10 flex flex-col justify-center items-start text-left">
             
             <h1 className="font-bold text-[#0D162B] text-4xl sm:text-6xl leading-[1.1] mb-4">
-              Premium B2B<br />Supplies
+              Premium Business to Business<br />Supplies
             </h1>
 
             <h2 className="font-bold text-[#56A02C] text-xl sm:text-3xl leading-tight mb-8">
