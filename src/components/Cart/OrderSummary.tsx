@@ -42,7 +42,27 @@ const OrderSummary = () => {
       return;
     }
 
+    if (Number(totalPrice) < 1000) {
+      toast.error("Minimum order amount is £1,000 in total. Please add more items to your cart.");
+      return;
+    }
+
     router.push("/checkout");
+  };
+
+  const getMinimumOrderWarning = () => {
+    if (Number(totalPrice) < 1000) {
+      const remaining = 1000 - Number(totalPrice);
+      return (
+        <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-md">
+          <p className="text-sm text-amber-800">
+            <strong>Minimum Order: £1,000.00</strong><br />
+            Add <strong>£{remaining.toFixed(2)}</strong> more to reach the minimum order total requirement.
+          </p>
+        </div>
+      );
+    }
+    return null;
   };
 
   const getKYCWarningMessage = () => {
@@ -90,6 +110,9 @@ const OrderSummary = () => {
     return null;
   };
 
+  const isMinimumMet = Number(totalPrice) >= 1000;
+  const isCheckoutDisabled = !isAuthenticated || !canPurchase || !isMinimumMet;
+
   return (
     <div className="lg:max-w-[455px] w-full">
       {/* <!-- order list box --> */}
@@ -117,7 +140,7 @@ const OrderSummary = () => {
               </div>
               <div>
                 <p className="text-dark text-right">
-                  ${Number(item.discountedPrice * item.quantity).toFixed(2)}
+                  £{Number(item.discountedPrice * item.quantity).toFixed(2)}
                 </p>
               </div>
             </div>
@@ -130,7 +153,7 @@ const OrderSummary = () => {
             </div>
             <div>
               <p className="font-medium text-lg text-dark text-right">
-                ${Number(totalPrice).toFixed(2)}
+                £{Number(totalPrice).toFixed(2)}
               </p>
             </div>
           </div>
@@ -139,9 +162,9 @@ const OrderSummary = () => {
           <button
             type="button"
             onClick={handleCheckout}
-            disabled={!isAuthenticated || !canPurchase}
+            disabled={isCheckoutDisabled}
             className={`w-full flex justify-center font-medium text-white py-3 px-6 rounded-md ease-out duration-200 mt-7.5 ${
-              isAuthenticated && canPurchase
+              !isCheckoutDisabled
                 ? "bg-blue hover:bg-blue-dark cursor-pointer"
                 : "bg-gray-400 cursor-not-allowed opacity-60"
             }`}
@@ -150,9 +173,14 @@ const OrderSummary = () => {
               ? "Sign In to Checkout" 
               : !canPurchase 
               ? "KYC Required for Checkout"
+              : !isMinimumMet
+              ? "Min. £1,000 Order Required"
               : "Proceed to Checkout"}
           </button>
           
+          {/* Minimum Order Warning */}
+          {getMinimumOrderWarning()}
+
           {/* KYC Warning Message */}
           {getKYCWarningMessage()}
         </div>

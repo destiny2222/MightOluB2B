@@ -11,11 +11,9 @@ import { useProducts } from "@/hooks/useProducts";
 import SingleGridItem from "../Shop/SingleGridItem";
 import SingleListItem from "../Shop/SingleListItem";
 
+import { getB2BCategories } from "@/lib/api/b2b-api";
+
 const ShopWithSidebar = () => {
-  const { products, loading } = useProducts();
-  const [productStyle, setProductStyle] = useState("grid");
-  const [productSidebar, setProductSidebar] = useState(false);
-  const [stickyMenu, setStickyMenu] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedSort, setSelectedSort] = useState("0");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -23,7 +21,39 @@ const ShopWithSidebar = () => {
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
+  const [categoriesList, setCategoriesList] = useState<{ name: string; products: number; isRefined: boolean }[]>([]);
   const itemsPerPage = 9;
+
+  const activeCategory = selectedCategories.length > 0 ? selectedCategories[0] : undefined;
+
+  const { products, loading, totalPages, totalCount } = useProducts({
+    page: currentPage,
+    perPage: itemsPerPage,
+    category: activeCategory,
+    sort: selectedSort,
+    minPrice: priceRange[0] > 0 ? priceRange[0] : undefined,
+    maxPrice: priceRange[1] < 1000 ? priceRange[1] : undefined,
+  });
+
+  const [productStyle, setProductStyle] = useState("grid");
+  const [productSidebar, setProductSidebar] = useState(false);
+  const [stickyMenu, setStickyMenu] = useState(false);
+
+  useEffect(() => {
+    getB2BCategories()
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setCategoriesList(
+            data.map((c) => ({
+              name: c.title,
+              products: c.products_count,
+              isRefined: selectedCategories.includes(c.title),
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+  }, [selectedCategories]);
 
   const handleStickyMenu = () => {
     if (window.scrollY >= 80) {
@@ -32,71 +62,6 @@ const ShopWithSidebar = () => {
       setStickyMenu(false);
     }
   };
-
-  // Filter and sort products
-  const getFilteredAndSortedProducts = () => {
-    let filtered = [...products];
-
-    // Filter by category
-    if (selectedCategories.length > 0) {
-      filtered = filtered.filter(product => 
-        selectedCategories.includes(product.category)
-      );
-    }
-
-    // Filter by gender
-    if (selectedGenders.length > 0) {
-      filtered = filtered.filter(product => 
-        selectedGenders.some(gender => 
-          product.tags?.toLowerCase().includes(gender.toLowerCase())
-        )
-      );
-    }
-
-    // Filter by size
-    if (selectedSizes.length > 0) {
-      filtered = filtered.filter(product => 
-        product.availableSizes?.some(size => selectedSizes.includes(size))
-      );
-    }
-
-    // Filter by color
-    if (selectedColors.length > 0) {
-      filtered = filtered.filter(product => 
-        product.availableColors?.some(color => selectedColors.includes(color))
-      );
-    }
-
-    // Filter by price range
-    filtered = filtered.filter(product => 
-      product.price >= priceRange[0] && product.price <= priceRange[1]
-    );
-
-    // Sort products
-    switch (selectedSort) {
-      case "0": // Latest Products
-        filtered.sort((a, b) => (b.id || 0) - (a.id || 0));
-        break;
-      case "1": // Best Selling
-        filtered.sort((a, b) => (b.soldAmount || 0) - (a.soldAmount || 0));
-        break;
-      case "2": // Old Products
-        filtered.sort((a, b) => (a.id || 0) - (b.id || 0));
-        break;
-      default:
-        break;
-    }
-
-    return filtered;
-  };
-
-  const filteredProducts = getFilteredAndSortedProducts();
-
-  // Pagination calculations
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
 
   // Pagination handlers
   const handlePageChange = (page: number) => {
@@ -118,17 +83,17 @@ const ShopWithSidebar = () => {
 
   // Handle filter changes
   const handleCategoryToggle = (category: string) => {
-    setSelectedCategories(prev => 
-      prev.includes(category) 
+    setSelectedCategories(prev =>
+      prev.includes(category)
         ? prev.filter(c => c !== category)
-        : [...prev, category]
+        : [category] // Single category filter or multi
     );
     setCurrentPage(1); // Reset to first page
   };
 
   const handleGenderToggle = (gender: string) => {
-    setSelectedGenders(prev => 
-      prev.includes(gender) 
+    setSelectedGenders(prev =>
+      prev.includes(gender)
         ? prev.filter(g => g !== gender)
         : [...prev, gender]
     );
@@ -154,7 +119,7 @@ const ShopWithSidebar = () => {
   const getPageNumbers = () => {
     const pages: (number | string)[] = [];
     const maxPagesToShow = 5;
-    
+
     if (totalPages <= maxPagesToShow + 2) {
       // Show all pages if total is small
       for (let i = 1; i <= totalPages; i++) {
@@ -163,57 +128,46 @@ const ShopWithSidebar = () => {
     } else {
       // Always show first page
       pages.push(1);
-      
+
       if (currentPage > 3) {
         pages.push('...');
       }
-      
+
       // Show pages around current page
       const startPage = Math.max(2, currentPage - 1);
       const endPage = Math.min(totalPages - 1, currentPage + 1);
-      
+
       for (let i = startPage; i <= endPage; i++) {
         pages.push(i);
       }
-      
+
       if (currentPage < totalPages - 2) {
         pages.push('...');
       }
-      
+
       // Always show last page
       pages.push(totalPages);
     }
-    
+
     return pages;
   };
 
   const options = [
     { label: "Latest Products", value: "0" },
-    { label: "Best Selling", value: "1" },
-    { label: "Old Products", value: "2" },
+    { label: "Price: Low to High", value: "1" },
+    { label: "Price: High to Low", value: "2" },
+    { label: "Title: A to Z", value: "3" },
+    { label: "Title: Z to A", value: "4" },
   ];
 
-  // Dynamic categories with actual product counts
-  const categories = React.useMemo(() => {
-    const categoryMap = new Map<string, number>();
-    products.forEach(product => {
-      const category = product.category || 'Uncategorized';
-      categoryMap.set(category, (categoryMap.get(category) || 0) + 1);
-    });
-    
-    return Array.from(categoryMap.entries()).map(([name, count]) => ({
-      name,
-      products: count,
-      isRefined: selectedCategories.includes(name),
-    }));
-  }, [products, selectedCategories]);
+  const categories = categoriesList;
 
   // Dynamic genders with actual product counts
   const genders = React.useMemo(() => {
     const genderTypes = ["Men", "Women", "Unisex"];
     return genderTypes.map(gender => ({
       name: gender,
-      products: products.filter(product => 
+      products: products.filter(product =>
         product.tags?.toLowerCase().includes(gender.toLowerCase())
       ).length,
     })).filter(g => g.products > 0);
@@ -249,20 +203,18 @@ const ShopWithSidebar = () => {
           <div className="flex gap-7.5">
             {/* <!-- Sidebar Start --> */}
             <div
-              className={`sidebar-content fixed xl:z-1 z-9999 left-0 top-0 xl:translate-x-0 xl:static max-w-[310px] xl:max-w-[270px] w-full ease-out duration-200 ${
-                productSidebar
+              className={`sidebar-content fixed xl:z-1 z-9999 left-0 top-0 xl:translate-x-0 xl:static max-w-[310px] xl:max-w-[270px] w-full ease-out duration-200 ${productSidebar
                   ? "translate-x-0 bg-white p-5 h-screen overflow-y-auto"
                   : "-translate-x-full"
-              }`}
+                }`}
             >
               <button
                 onClick={() => setProductSidebar(!productSidebar)}
                 aria-label="button for product sidebar toggle"
-                className={`xl:hidden absolute -right-12.5 sm:-right-8 flex items-center justify-center w-8 h-8 rounded-md bg-white shadow-1 ${
-                  stickyMenu
+                className={`xl:hidden absolute -right-12.5 sm:-right-8 flex items-center justify-center w-8 h-8 rounded-md bg-white shadow-1 ${stickyMenu
                     ? "lg:top-20 sm:top-34.5 top-35"
                     : "lg:top-24 sm:top-39 top-37"
-                }`}
+                  }`}
               >
                 <svg
                   className="fill-current"
@@ -293,7 +245,7 @@ const ShopWithSidebar = () => {
                   <div className="bg-white shadow-1 rounded-lg py-4 px-5">
                     <div className="flex items-center justify-between">
                       <p>Filters:</p>
-                      <button 
+                      <button
                         type="button"
                         onClick={handleClearFilters}
                         className="text-blue hover:underline"
@@ -304,14 +256,14 @@ const ShopWithSidebar = () => {
                   </div>
 
                   {/* <!-- category box --> */}
-                  <CategoryDropdown 
-                    categories={categories} 
+                  <CategoryDropdown
+                    categories={categories}
                     onToggle={handleCategoryToggle}
                   />
 
                   {/* <!-- gender box --> */}
-                   
- 
+
+
 
                   {/* // <!-- price range box --> */}
                   <PriceDropdown />
@@ -326,14 +278,14 @@ const ShopWithSidebar = () => {
                 <div className="flex items-center justify-between">
                   {/* <!-- top bar left --> */}
                   <div className="flex flex-wrap items-center gap-4">
-                    <CustomSelect 
-                      options={options} 
+                    <CustomSelect
+                      options={options}
                       onChange={handleSortChange}
                       value={selectedSort}
                     />
 
                     <p>
-                      Showing <span className="text-dark">{filteredProducts.length > 0 ? startIndex + 1 : 0}-{Math.min(endIndex, filteredProducts.length)} of {filteredProducts.length}</span>{" "}
+                      Showing <span className="text-dark">{products.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0}-{Math.min(currentPage * itemsPerPage, totalCount)} of {totalCount}</span>{" "}
                       Products
                     </p>
                   </div>
@@ -343,11 +295,10 @@ const ShopWithSidebar = () => {
                     <button
                       onClick={() => setProductStyle("grid")}
                       aria-label="button for product grid tab"
-                      className={`${
-                        productStyle === "grid"
+                      className={`${productStyle === "grid"
                           ? "bg-blue border-blue text-white"
                           : "text-dark bg-gray-1 border-gray-3"
-                      } flex items-center justify-center w-10.5 h-9 rounded-[5px] border ease-out duration-200 hover:bg-blue hover:border-blue hover:text-white`}
+                        } flex items-center justify-center w-10.5 h-9 rounded-[5px] border ease-out duration-200 hover:bg-blue hover:border-blue hover:text-white`}
                     >
                       <svg
                         className="fill-current"
@@ -381,36 +332,34 @@ const ShopWithSidebar = () => {
                           d="M13.086 1.3125C12.4122 1.31248 11.8502 1.31246 11.4041 1.37244C10.9333 1.43574 10.5082 1.57499 10.1666 1.91659C9.82499 2.2582 9.68574 2.6833 9.62244 3.15414C9.56246 3.60023 9.56248 4.16214 9.5625 4.836V4.914C9.56248 5.58786 9.56246 6.14978 9.62244 6.59586C9.68574 7.06671 9.82499 7.49181 10.1666 7.83341C10.5082 8.17501 10.9333 8.31427 11.4041 8.37757C11.8502 8.43754 12.4121 8.43752 13.086 8.4375H13.164C13.8378 8.43752 14.3998 8.43754 14.8459 8.37757C15.3167 8.31427 15.7418 8.17501 16.0834 7.83341C16.425 7.49181 16.5643 7.06671 16.6276 6.59586C16.6875 6.14978 16.6875 5.58787 16.6875 4.91402V4.83601C16.6875 4.16216 16.6875 3.60022 16.6276 3.15414C16.5643 2.6833 16.425 2.2582 16.0834 1.91659C15.7418 1.57499 15.3167 1.43574 14.8459 1.37244C14.3998 1.31246 13.8379 1.31248 13.164 1.3125H13.086ZM10.9621 2.71209C11.0598 2.61435 11.208 2.53394 11.554 2.4874C11.9163 2.4387 12.402 2.4375 13.125 2.4375C13.848 2.4375 14.3337 2.4387 14.696 2.4874C15.0421 2.53394 15.1902 2.61435 15.2879 2.71209C15.3857 2.80983 15.4661 2.95795 15.5126 3.30405C15.5613 3.66632 15.5625 4.15199 15.5625 4.875C15.5625 5.59801 15.5613 6.08368 15.5126 6.44596C15.4661 6.79205 15.3857 6.94018 15.2879 7.03791C15.1902 7.13565 15.0421 7.21607 14.696 7.2626C14.3337 7.31131 13.848 7.3125 13.125 7.3125C12.402 7.3125 11.9163 7.31131 11.554 7.2626C11.208 7.21607 11.0598 7.13565 10.9621 7.03791C10.8644 6.94018 10.7839 6.79205 10.7374 6.44596C10.6887 6.08368 10.6875 5.59801 10.6875 4.875C10.6875 4.15199 10.6887 3.66632 10.7374 3.30405C10.7839 2.95795 10.8644 2.80983 10.9621 2.71209Z"
                           fill=""
                         />
-                      </svg>
-                    </button>
-
-                    <button
-                      onClick={() => setProductStyle("list")}
-                      aria-label="button for product list tab"
-                      className={`${
-                        productStyle === "list"
-                          ? "bg-blue border-blue text-white"
-                          : "text-dark bg-gray-1 border-gray-3"
-                      } flex items-center justify-center w-10.5 h-9 rounded-[5px] border ease-out duration-200 hover:bg-blue hover:border-blue hover:text-white`}
-                    >
-                      <svg
-                        className="fill-current"
-                        width="18"
-                        height="18"
-                        viewBox="0 0 18 18"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
                         <path
                           fillRule="evenodd"
                           clipRule="evenodd"
-                          d="M4.4234 0.899903C3.74955 0.899882 3.18763 0.899864 2.74155 0.959838C2.2707 1.02314 1.8456 1.16239 1.504 1.504C1.16239 1.8456 1.02314 2.2707 0.959838 2.74155C0.899864 3.18763 0.899882 3.74953 0.899903 4.42338V4.5014C0.899882 5.17525 0.899864 5.73718 0.959838 6.18326C1.02314 6.65411 1.16239 7.07921 1.504 7.42081C1.8456 7.76241 2.2707 7.90167 2.74155 7.96497C3.18763 8.02495 3.74953 8.02493 4.42339 8.02491H4.5014C5.17525 8.02493 14.7372 8.02495 15.1833 7.96497C15.6541 7.90167 16.0792 7.76241 16.4208 7.42081C16.7624 7.07921 16.9017 6.65411 16.965 6.18326C17.0249 5.73718 17.0249 5.17527 17.0249 4.50142V4.42341C17.0249 3.74956 17.0249 3.18763 16.965 2.74155C16.9017 2.2707 16.7624 1.8456 16.4208 1.504C16.0792 1.16239 15.6541 1.02314 15.1833 0.959838C14.7372 0.899864 5.17528 0.899882 4.50142 0.899903H4.4234ZM2.29949 2.29949C2.39723 2.20175 2.54535 2.12134 2.89145 2.07481C3.25373 2.0261 3.7394 2.0249 4.4624 2.0249C5.18541 2.0249 14.6711 2.0261 15.0334 2.07481C15.3795 2.12134 15.5276 2.20175 15.6253 2.29949C15.7231 2.39723 15.8035 2.54535 15.85 2.89145C15.8987 3.25373 15.8999 3.7394 15.8999 4.4624C15.8999 5.18541 15.8987 5.67108 15.85 6.03336C15.8035 6.37946 15.7231 6.52758 15.6253 6.62532C15.5276 6.72305 15.3795 6.80347 15.0334 6.85C14.6711 6.89871 5.18541 6.8999 4.4624 6.8999C3.7394 6.8999 3.25373 6.89871 2.89145 6.85C2.54535 6.80347 2.39723 6.72305 2.29949 6.62532C2.20175 6.52758 2.12134 6.37946 2.07481 6.03336C2.0261 5.67108 2.0249 5.18541 2.0249 4.4624C2.0249 3.7394 2.0261 3.25373 2.07481 2.89145C2.12134 2.54535 2.20175 2.39723 2.29949 2.29949Z"
+                          d="M8.0249 1.3501C8.0249 0.852934 8.42774 0.450098 8.9249 0.450098H16.1249C16.6221 0.450098 17.0249 0.852934 17.0249 1.3501C17.0249 1.84726 16.6221 2.2501 16.1249 2.2501H8.9249C8.42774 2.2501 8.0249 1.84726 8.0249 1.3501Z"
                           fill=""
                         />
                         <path
                           fillRule="evenodd"
                           clipRule="evenodd"
-                          d="M4.4234 9.1499H4.5014C5.17526 9.14988 14.7372 9.14986 15.1833 9.20984C15.6541 9.27314 16.0792 9.41239 16.4208 9.754C16.7624 10.0956 16.9017 10.5207 16.965 10.9915C17.0249 11.4376 17.0249 11.9995 17.0249 12.6734V12.7514C17.0249 13.4253 17.0249 13.9872 16.965 14.4333C16.9017 14.9041 16.7624 15.3292 16.4208 15.6708C16.0792 16.0124 15.6541 16.1517 15.1833 16.215C14.7372 16.2749 5.17529 16.2749 4.50145 16.2749H4.42341C3.74957 16.2749 3.18762 16.2749 2.74155 16.215C2.2707 16.1517 1.8456 16.0124 1.504 15.6708C1.16239 15.3292 1.02314 14.9041 0.959838 14.4333C0.899864 13.9872 0.899882 13.4253 0.899903 12.7514V12.6734C0.899882 11.9996 0.899864 11.4376 0.959838 10.9915C1.02314 10.5207 1.16239 10.0956 1.504 9.754C1.8456 9.41239 2.2707 9.27314 2.74155 9.20984C3.18763 9.14986 3.74955 9.14988 4.4234 9.1499ZM2.89145 10.3248C2.54535 10.3713 2.39723 10.4518 2.29949 10.5495C2.20175 10.6472 2.12134 10.7954 2.07481 11.1414C2.0261 11.5037 2.0249 11.9894 2.0249 12.7124C2.0249 13.4354 2.0261 13.9211 2.07481 14.2834C2.12134 14.6295 2.20175 14.7776 2.29949 14.8753C2.39723 14.9731 2.54535 15.0535 2.89145 15.1C3.25373 15.1487 3.7394 15.1499 4.4624 15.1499C5.18541 15.1499 14.6711 15.1487 15.0334 15.1C15.3795 15.0535 15.5276 14.9731 15.6253 14.8753C15.7231 14.7776 15.8035 14.6295 15.85 14.2834C15.8987 13.9211 15.8999 13.4354 15.8999 12.7124C15.8999 11.9894 15.8987 11.5037 15.85 11.1414C15.8035 10.7954 15.7231 10.6472 15.6253 10.5495C15.5276 10.4518 15.3795 10.3713 15.0334 10.3248C14.6711 10.2761 5.18541 10.2749 4.4624 10.2749C3.7394 10.2749 3.25373 10.2761 2.89145 10.3248Z"
+                          d="M8.0249 4.9501C8.0249 4.45293 8.42774 4.0501 8.9249 4.0501H16.1249C16.6221 4.0501 17.0249 4.45293 17.0249 4.9501C17.0249 5.44726 16.6221 5.8501 16.1249 5.8501H8.9249C8.42774 5.8501 8.0249 5.44726 8.0249 4.9501Z"
+                          fill=""
+                        />
+                        <path
+                          fillRule="evenodd"
+                          clipRule="evenodd"
+                          d="M8.0249 8.5501C8.0249 8.05293 8.42774 7.6501 8.9249 7.6501H16.1249C16.6221 7.6501 17.0249 8.05293 17.0249 8.5501C17.0249 9.04726 16.6221 9.4501 16.1249 9.4501H8.9249C8.42774 9.4501 8.0249 9.04726 8.0249 8.5501Z"
+                          fill=""
+                        />
+                        <path
+                          fillRule="evenodd"
+                          clipRule="evenodd"
+                          d="M4.4234 9.8999C3.74955 9.89988 3.18763 9.89986 2.74155 9.95984C2.2707 10.0231 1.8456 10.1624 1.504 10.504C1.16239 10.8456 1.02314 11.2707 0.959838 11.7415C0.899864 12.1876 0.899882 12.7495 0.899903 13.4234V13.5014C0.899882 14.1752 0.899864 14.7372 0.959838 15.1833C1.02314 15.6541 1.16239 16.0792 1.504 16.4208C1.8456 16.7624 2.2707 16.9017 2.74155 16.965C3.18763 17.0249 3.74953 17.0249 4.42339 17.0249H4.5014C5.17525 17.0249 14.7372 17.0249 15.1833 16.965C15.6541 16.9017 16.0792 16.7624 16.4208 16.4208C16.7624 16.0792 16.9017 15.6541 16.965 15.1833C17.0249 14.7372 17.0249 14.1753 17.0249 13.5014V13.4234C17.0249 12.7496 17.0249 12.1876 16.965 11.7415C16.9017 11.2707 16.7624 10.8456 16.4208 10.504C16.0792 10.1624 15.6541 10.0231 15.1833 9.95984C14.7372 9.89986 5.17528 9.89988 4.50142 9.8999H4.4234ZM2.29949 11.2995C2.39723 11.2017 2.54535 11.1213 2.89145 11.0748C3.25373 11.0261 3.7394 11.0249 4.4624 11.0249C5.18541 11.0249 14.6711 11.0261 15.0334 11.0748C15.3795 11.1213 15.5276 11.2017 15.6253 11.2995C15.7231 11.3972 15.8035 11.5453 15.85 11.8915C15.8987 12.2537 15.8999 12.7394 15.8999 13.4624C15.8999 14.1854 15.8987 14.6711 15.85 15.0334C15.8035 15.3795 15.7231 15.5276 15.6253 15.6253C15.5276 15.7231 15.3795 15.8035 15.0334 15.85C14.6711 15.8987 5.18541 15.8999 4.4624 15.8999C3.7394 15.8999 3.25373 15.8987 2.89145 15.85C2.54535 15.8035 2.39723 15.7231 2.29949 15.6253C2.20175 15.5276 2.12134 15.3795 2.07481 15.0334C2.0261 14.6711 2.0249 14.1854 2.0249 13.4624C2.0249 12.7394 2.0261 12.2537 2.07481 11.8915C2.12134 11.5453 2.20175 11.3972 2.29949 11.2995Z"
+                          fill=""
+                        />
+                        <path
+                          fillRule="evenodd"
+                          clipRule="evenodd"
+                          d="M8.0249 13.9501C8.0249 13.4529 8.42774 13.0501 8.9249 13.0501H16.1249C16.6221 13.0501 17.0249 13.4529 17.0249 13.9501C17.0249 14.4473 16.6221 14.8501 16.1249 14.8501H8.9249C8.42774 14.8501 8.0249 14.4473 8.0249 13.9501Z"
                           fill=""
                         />
                       </svg>
@@ -421,16 +370,15 @@ const ShopWithSidebar = () => {
 
               {/* <!-- Products Grid Tab Content Start --> */}
               <div
-                className={`${
-                  productStyle === "grid"
+                className={`${productStyle === "grid"
                     ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-7.5 gap-y-9"
                     : "flex flex-col gap-7.5"
-                }`}
+                  }`}
               >
                 {loading ? (
                   <p>Loading products...</p>
                 ) : (
-                  paginatedProducts.map((item, key) =>
+                  products.map((item, key) =>
                     productStyle === "grid" ? (
                       <SingleGridItem item={item} key={key} />
                     ) : (
@@ -477,11 +425,10 @@ const ShopWithSidebar = () => {
                           {typeof page === 'number' ? (
                             <button
                               onClick={() => handlePageChange(page)}
-                              className={`flex py-1.5 px-3.5 duration-200 rounded-[3px] ${
-                                currentPage === page
+                              className={`flex py-1.5 px-3.5 duration-200 rounded-[3px] ${currentPage === page
                                   ? 'bg-blue text-white'
                                   : 'hover:text-white hover:bg-blue'
-                              }`}
+                                }`}
                             >
                               {page}
                             </button>

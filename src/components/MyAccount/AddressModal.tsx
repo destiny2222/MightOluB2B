@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 
-const AddressModal = ({ isOpen, closeModal }) => {
+const AddressModal = ({ isOpen, closeModal }: any) => {
   useEffect(() => {
     // closing modal while clicking outside
     function handleClickOutside(event) {

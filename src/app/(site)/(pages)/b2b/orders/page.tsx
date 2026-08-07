@@ -43,8 +43,6 @@ const OrdersHistoryPage = () => {
         return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-purple text-white">Dispatched</span>;
       case 'Delivered':
         return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Delivered</span>;
-      case 'Invoiced':
-        return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-dark text-white">Invoiced</span>;
       default:
         return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-2 text-dark">{status}</span>;
     }
@@ -135,7 +133,7 @@ const OrdersHistoryPage = () => {
                           )}
                         </td>
                         <td className="py-4 px-4 font-medium text-dark">
-                          ${Number(order.total_amount).toFixed(2)}
+                          £{Number(order.total_amount).toFixed(2)}
                         </td>
                         <td className="py-4 px-4">
                           {getStatusBadge(order.status)}

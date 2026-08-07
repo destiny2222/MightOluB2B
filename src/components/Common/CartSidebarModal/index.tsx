@@ -10,6 +10,7 @@ import { useSelector } from "react-redux";
 import SingleItem from "./SingleItem";
 import Link from "next/link";
 import EmptyCart from "./EmptyCart";
+import { toast } from "react-toastify";
 
 const CartSidebarModal = () => {
   const { isCartModalOpen, closeCartModal } = useCartModalContext();
@@ -105,13 +106,20 @@ const CartSidebarModal = () => {
                 View Cart
               </Link>
 
-              <Link
-                onClick={() => closeCartModal()}
-                href="/checkout"
+              <button
+                onClick={() => {
+                  closeCartModal();
+                  if (Number(totalPrice) < 1000) {
+                    toast.error("Minimum order total requirement is £1,000. Please add more items to your cart.");
+                    window.location.href = "/cart";
+                  } else {
+                    window.location.href = "/checkout";
+                  }
+                }}
                 className="w-full flex justify-center font-medium text-white bg-dark py-[13px] px-6 rounded-md ease-out duration-200 hover:bg-opacity-95"
               >
                 Checkout
-              </Link>
+              </button>
             </div>
           </div>
         </div>
