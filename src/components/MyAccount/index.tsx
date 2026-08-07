@@ -1,21 +1,48 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { selectUser, logout } from "@/redux/features/auth-slice";
+import { selectUser, selectAuth, logout } from "@/redux/features/auth-slice";
 import { getShippingAddresses, ShippingAddress, deleteShippingAddress, updateUserProfile, changeUserPassword } from "@/lib/api/b2b-api";
 import Breadcrumb from "../Common/Breadcrumb";
 import Image from "next/image";
 import AddressModal from "./AddressModal";
 import Orders from "../Orders";
 import { toast, ToastContainer } from "react-toastify";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const MyAccount = () => {
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams?.get("tab");
+  const { isAuthenticated, isLoading } = useSelector(selectAuth);
+  const user = useSelector(selectUser);
+  const dispatch = useDispatch();
+
+  const [activeTab, setActiveTab] = useState(tabParam || "dashboard");
+  const [isClientLoaded, setIsClientLoaded] = useState(false);
+
+  useEffect(() => {
+    setIsClientLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    if (tabParam && ["dashboard", "orders", "addresses", "account-details"].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
+
+  useEffect(() => {
+    if (isClientLoaded && !isLoading && !isAuthenticated) {
+      toast.error("Please sign in to access your account and orders.");
+      const redirectTarget = tabParam ? `/my-account?tab=${tabParam}` : "/my-account";
+      router.push(`/signin?redirect=${encodeURIComponent(redirectTarget)}`);
+    }
+  }, [isClientLoaded, isLoading, isAuthenticated, router, tabParam]);
+
   const [addressModal, setAddressModal] = useState(false);
   const [shippingAddresses, setShippingAddresses] = useState<ShippingAddress[]>([]);
   const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
-  const user = useSelector(selectUser);
-  const dispatch = useDispatch();
+
   const [profileForm, setProfileForm] = useState({
     first_name: "",
     last_name: "",
@@ -42,6 +69,37 @@ const MyAccount = () => {
       });
     }
   }, [user]);
+
+  const fetchAddresses = async () => {
+    setIsLoadingAddresses(true);
+    try {
+      const response = await getShippingAddresses();
+      if (response.success) { 
+        setShippingAddresses(response.data);
+      }
+    } catch (error) {
+      // toast.error("Failed to fetch shipping addresses: " + error);
+    } finally {
+      setIsLoadingAddresses(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isAuthenticated && activeTab === "addresses") {
+      fetchAddresses();
+    }
+  }, [activeTab, isAuthenticated]);
+
+  if (!isClientLoaded || isLoading || !isAuthenticated) {
+    return (
+      <>
+        <Breadcrumb title={"My Account"} pages={["my account"]} />
+        <div className="py-20 text-center text-dark min-h-[400px] flex items-center justify-center">
+          <p className="text-gray-5 font-medium">Redirecting to sign in...</p>
+        </div>
+      </>
+    );
+  }
 
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,28 +131,6 @@ const MyAccount = () => {
       toast.error("An error occurred while changing password.");
     }
   };
-
-
-
-  const fetchAddresses = async () => {
-    setIsLoadingAddresses(true);
-    try {
-      const response = await getShippingAddresses();
-      if (response.success) { 
-        setShippingAddresses(response.data);
-      }
-    } catch (error) {
-      // toast.error("Failed to fetch shipping addresses: " + error);
-    } finally {
-      setIsLoadingAddresses(false);
-    }
-  };
-
-  useEffect(() => {
-    if (activeTab === "addresses") {
-      fetchAddresses();
-    }
-  }, [activeTab]);
 
   const handleDeleteAddress = async (id: number) => {
     if (!window.confirm("Are you sure you want to delete this address?")) return;
@@ -477,7 +513,6 @@ const MyAccount = () => {
                 activeTab === "account-details" ? "block" : "hidden"
               }`}
             >
-               
                 <form onSubmit={handleProfileSubmit} className="bg-white shadow-1 rounded-xl p-4 sm:p-8.5">
                   <div className="flex flex-col lg:flex-row gap-5 sm:gap-8 mb-5">
                     <div className="w-full">

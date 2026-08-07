@@ -4,20 +4,14 @@ import OrderModal from "./OrderModal";
 
 const SingleOrder = ({ orderItem, smallView }: any) => {
   const [showDetails, setShowDetails] = useState(false);
-  const [showEdit, setShowEdit] = useState(false);
   const displayId = String(orderItem.orderId || orderItem.id || "00000000").slice(-8);
 
   const toggleDetails = () => {
     setShowDetails(!showDetails);
   };
 
-  const toggleEdit = () => {
-    setShowEdit(!showEdit);
-  };
-
   const toggleModal = (status: boolean) => {
     setShowDetails(status);
-    setShowEdit(status);
   };
 
   return (
@@ -60,7 +54,6 @@ const SingleOrder = ({ orderItem, smallView }: any) => {
           <div className="flex gap-5 items-center">
             <OrderActions
               toggleDetails={toggleDetails}
-              toggleEdit={toggleEdit}
             />
           </div>
         </div>
@@ -119,7 +112,6 @@ const SingleOrder = ({ orderItem, smallView }: any) => {
                 <span className="font-bold pr-2">Actions:</span>{" "}
                 <OrderActions
                   toggleDetails={toggleDetails}
-                  toggleEdit={toggleEdit}
                 />
               </p>
             </div>
@@ -129,7 +121,6 @@ const SingleOrder = ({ orderItem, smallView }: any) => {
 
       <OrderModal
         showDetails={showDetails}
-        showEdit={showEdit}
         toggleModal={toggleModal}
         order={orderItem}
       />

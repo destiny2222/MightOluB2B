@@ -452,7 +452,7 @@ const Header = () => {
           {/* Right Links (Track Order, Daily Deals) with location pointer & tag icons */}
           <div className="flex items-center gap-6.5 text-custom-sm font-bold text-dark flex-shrink-0">
             <Link
-              href="/my-account"
+              href="/my-account?tab=orders"
               className="flex items-center gap-2 hover:text-blue transition-colors group"
             >
               <svg className="w-5.5 h-5.5 text-dark group-hover:text-blue transition-colors" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">

@@ -57,7 +57,7 @@ const Success = () => {
             <Link href="/my-account" className={styles.primaryBtn}>
               View Order Details
             </Link>
-            <Link href="/shop-with-sidebar" className={styles.secondaryBtn}>
+            <Link href="/product" className={styles.secondaryBtn}>
               Continue Shopping
             </Link>
           </div>

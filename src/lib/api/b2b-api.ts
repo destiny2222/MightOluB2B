@@ -310,13 +310,60 @@ export async function updateBusinessProfile(
 
 // ==================== CATALOG & PRODUCTS ENDPOINTS ====================
 
+export interface B2BCatalogParams {
+  token?: string;
+  page?: number;
+  perPage?: number;
+  search?: string;
+  category?: string;
+  sort?: string;
+  minPrice?: number;
+  maxPrice?: number;
+}
+
 /**
  * Get B2B Catalog Products
  */
-export async function getB2BCatalog(token?: string, page: number = 1): Promise<B2BCatalogResponse> {
-  const response = await fetch(`${API_BASE_URL}${API_VERSION}/b2b/catalog?page=${page}`, {
+export async function getB2BCatalog(
+  paramsOrToken?: B2BCatalogParams | string,
+  page: number = 1,
+  perPage?: number
+): Promise<B2BCatalogResponse> {
+  let token: string | undefined;
+  let params: B2BCatalogParams = {};
+
+  if (typeof paramsOrToken === 'string') {
+    token = paramsOrToken;
+    params = { page, perPage };
+  } else if (paramsOrToken && typeof paramsOrToken === 'object') {
+    token = paramsOrToken.token;
+    params = paramsOrToken;
+  }
+
+  const url = new URL(`${API_BASE_URL}${API_VERSION}/b2b/catalog`);
+  if (params.page) url.searchParams.set('page', params.page.toString());
+  if (params.perPage) url.searchParams.set('per_page', params.perPage.toString());
+  if (params.search) url.searchParams.set('search', params.search);
+  if (params.category) url.searchParams.set('category', params.category);
+  if (params.sort) url.searchParams.set('sort', params.sort);
+  if (params.minPrice !== undefined) url.searchParams.set('min_price', params.minPrice.toString());
+  if (params.maxPrice !== undefined) url.searchParams.set('max_price', params.maxPrice.toString());
+
+  const response = await fetch(url.toString(), {
     method: 'GET',
     headers: getAuthHeaders(token),
+  });
+
+  return handleResponse(response);
+}
+
+/**
+ * Get B2B Categories list with product counts
+ */
+export async function getB2BCategories(): Promise<{ id: number; title: string; slug: string; products_count: number }[]> {
+  const response = await fetch(`${API_BASE_URL}${API_VERSION}/b2b/categories`, {
+    method: 'GET',
+    headers: getAuthHeaders(),
   });
 
   return handleResponse(response);

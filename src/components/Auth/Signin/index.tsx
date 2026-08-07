@@ -5,12 +5,14 @@ import React, { useState, useEffect } from "react";
 import { useAppDispatch } from "@/redux/store";
 import { useSelector } from "react-redux";
 import { loginB2BUser, selectAuth, clearError } from "@/redux/features/auth-slice";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
 
 const Signin = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectParam = searchParams?.get("redirect");
   const { isLoading, error, isAuthenticated, user } = useSelector(selectAuth);
 
   const [formData, setFormData] = useState({
@@ -23,9 +25,10 @@ const Signin = () => {
   useEffect(() => {
     if (isAuthenticated && user) {
       toast.success("Login successful!");
-      window.location.href = "/";
+      const targetUrl = redirectParam || "/";
+      window.location.href = targetUrl;
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, redirectParam]);
 
   useEffect(() => {
     if (error) {

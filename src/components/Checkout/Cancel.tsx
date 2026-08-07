@@ -29,7 +29,7 @@ const Cancel = () => {
                 Return to Cart
               </Link>
               <Link
-                href="/shop-with-sidebar"
+                href="/product"
                 className="inline-flex justify-center items-center py-3 px-8 text-base font-medium text-dark bg-gray-2 border border-gray-3 rounded-md hover:bg-gray-3 ease-out duration-200 w-full sm:w-auto"
               >
                 Continue Shopping

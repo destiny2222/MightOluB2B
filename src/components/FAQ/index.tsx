@@ -28,7 +28,7 @@ const FAQ = () => {
       id: "q3",
       category: "general",
       question: "Is there a Minimum Order Value (MOV)?",
-      answer: "Yes, to maintain wholesale direct delivery routes, we require a minimum order value of £250. Orders under this amount may incur a local route surcharge, which will be calculated dynamically at checkout."
+      answer: "Yes, to maintain wholesale direct delivery routes, we require a minimum order value of £1,000. Orders under this amount cannot be placed at checkout."
     },
     {
       id: "q4",

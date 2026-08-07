@@ -70,6 +70,12 @@ const Checkout = () => {
       return;
     }
 
+    if (Number(totalPrice) < 1000) {
+      toast.error("Minimum order amount is £1,000 in total. Please add more items to your cart.");
+      router.push("/cart");
+      return;
+    }
+
     if (!selectedAddressId && (!manualAddress.address || !manualAddress.city || !manualAddress.country || !manualAddress.postal_code)) {
       toast.error("Please provide a complete shipping address.");
       return;
@@ -145,6 +151,20 @@ const Checkout = () => {
       <Breadcrumb title={"Checkout"} pages={["checkout"]} />
       <section className="overflow-hidden py-20 bg-[#F9FAFB]">
         <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
+          {Number(totalPrice) < 1000 && (
+            <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-md flex items-center justify-between">
+              <p className="text-sm text-amber-800 font-medium">
+                <strong>Minimum Order Total Requirement: £1,000.00</strong> — Your current order total is £{Number(totalPrice).toFixed(2)}. Please add more items to your cart before proceeding.
+              </p>
+              <button 
+                type="button" 
+                onClick={() => router.push("/cart")} 
+                className="text-xs font-bold text-amber-900 bg-amber-200 px-3 py-1.5 rounded hover:bg-amber-300 transition"
+              >
+                Return to Cart
+              </button>
+            </div>
+          )}
           <form onSubmit={handleSubmit}>
             <div className="flex flex-col lg:flex-row gap-7.5 xl:gap-11">
               {/* <!-- checkout left --> */}

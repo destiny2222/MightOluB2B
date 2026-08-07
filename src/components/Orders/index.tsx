@@ -2,16 +2,23 @@ import React, { useEffect, useState } from "react";
 import SingleOrder from "./SingleOrder";
 import { getPurchaseOrders } from "@/lib/api/b2b-api";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
+import { selectAuth } from "@/redux/features/auth-slice";
 
 const Orders = () => {
   const [orders, setOrders] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { isAuthenticated } = useSelector(selectAuth);
 
   useEffect(() => {
     const fetchOrders = async () => {
+      if (!isAuthenticated) {
+        setIsLoading(false);
+        return;
+      }
       try {
         const data = await getPurchaseOrders();
-        if (data.orders) {
+        if (data && data.orders) {
           const mappedOrders = data.orders.map((po: any) => ({
             id: po.id,
             orderId: po.po_number,
@@ -25,13 +32,15 @@ const Orders = () => {
         }
       } catch (err: any) {
         console.error("Error fetching orders:", err);
-        toast.error("Failed to load order history");
+        if (isAuthenticated) {
+          toast.error("Failed to load order history");
+        }
       } finally {
         setIsLoading(false);
       }
     };
     fetchOrders();
-  }, []);
+  }, [isAuthenticated]);
 
   return (
     <>
