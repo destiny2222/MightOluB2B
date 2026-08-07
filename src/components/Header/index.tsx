@@ -163,7 +163,7 @@ const Header = () => {
                   <span>{user.name}</span>
                   {hasB2BAccess && (
                     <span className="ml-1 px-1.5 py-0.5 bg-blue text-white text-[10px] rounded uppercase font-bold">
-                      {currentView === 'business' ? 'B2B' : 'Retail'}
+                      {currentView === 'business' ? 'Business to Business' : 'Retail'}
                     </span>
                   )}
                   <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -217,7 +217,7 @@ const Header = () => {
                            
                         </>
                       )}
-                      {user.kyc_id && user.kyc?.status !== 'approved' && (
+                      {user.kyc?.id && user.kyc?.status !== 'approved' && (
                         <Link
                           href="/b2b/application-status"
                           onClick={() => setUserMenuOpen(false)}

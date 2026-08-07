@@ -93,7 +93,7 @@ const OrderDetailPage = () => {
 
   return (
     <main>
-      <Breadcrumb title={`Order: ${order.internal_reference}`} pages={["Home", "B2B", "Orders", order.internal_reference]} />
+      <Breadcrumb title={`Order: ${order.internal_reference}`} pages={["Home", "Business to Business", "Orders", order.internal_reference]} />
 
       <section className="pb-20 pt-10">
         <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">

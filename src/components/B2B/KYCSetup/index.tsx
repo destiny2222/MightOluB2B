@@ -49,7 +49,8 @@ const KYCSetup = () => {
 
   // Redirect if not authenticated
   useEffect(() => {
-    if (!isAuthenticated && !authLoading) {
+    const hasStoredToken = typeof window !== 'undefined' && localStorage.getItem('b2b_token');
+    if (!isAuthenticated && !authLoading && !hasStoredToken) {
       toast.error("Please login to continue");
       router.push("/b2b/login");
     }
@@ -114,7 +115,7 @@ const KYCSetup = () => {
         
         // Handle specific error for already having a KYC
         if (err?.error?.includes("already associated") || err?.includes("already associated")) {
-          toast.error("You already have a B2B application. Refreshing your status...");
+          toast.error("You already have a Business to Business application. Refreshing your status...");
           
           // Fetch updated profile
           await dispatch(fetchUserProfile()).unwrap();
@@ -164,7 +165,7 @@ const KYCSetup = () => {
             <div className="flex justify-between items-start mb-11">
               <div className="text-left">
                 <h2 className="font-semibold text-xl sm:text-2xl xl:text-heading-5 text-dark mb-1.5">
-                  {isResubmission ? "Resubmit Your Application" : "Complete Your B2B Profile"}
+                  {isResubmission ? "Resubmit Your Application" : "Complete Your Business to Business Profile"}
                 </h2>
                 <p className="text-gray-5">
                   {isResubmission

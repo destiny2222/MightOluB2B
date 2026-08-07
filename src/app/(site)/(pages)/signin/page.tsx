@@ -5,8 +5,8 @@ import { ToastContainer } from "react-toastify";
 
 
 export const metadata: Metadata = {
-  title: "Signin Page | B2B  B2B E-commerce",
-  description: "This is Signin Page for B2B  Template",
+  title: "Signin Page | Business to Business E-commerce",
+  description: "Sign in to your wholesale buyer or company account. Access exclusive direct-from-farm catalog pricing, manage user permissions, and order food supplies.",
   // other metadata
 };
 

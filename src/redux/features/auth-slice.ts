@@ -238,12 +238,12 @@ export const selectToken = (state: RootState) => state.authReducer.token;
 
 // KYC-related selectors
 export const selectHasKYC = (state: RootState) =>
-  state.authReducer.user?.kyc_id !== null && state.authReducer.user?.kyc_id !== undefined;
+  state.authReducer.user?.kyc?.id !== null && state.authReducer.user?.kyc?.id !== undefined;
 export const selectKYCStatus = (state: RootState) =>
   state.authReducer.user?.kyc?.status || null;
 export const selectCanPurchase = (state: RootState) => {
   const user = state.authReducer.user;
-  if (!user || user.kyc_id === null) return false;
+  if (!user || user.kyc?.id === null) return false;
   return user.kyc?.status === 'approved';
 };
 

@@ -5,8 +5,8 @@ import { ToastContainer } from "react-toastify";
 
 
 export const metadata: Metadata = {
-  title: "Wishlist Page | B2B  B2B E-commerce",
-  description: "This is Wishlist Page for B2B  Template",
+  title: "Wishlist Page | Business to Business E-commerce",
+  description: "View and manage your saved wholesale food products, ingredients, and kitchen supply lists. Keep track of items to simplify your recurring business procurement.",
   // other metadata
 };
 

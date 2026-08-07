@@ -3,8 +3,8 @@ import Error from "@/components/Error";
 
 import { Metadata } from "next";
 export const metadata: Metadata = {
-  title: "Error Page | B2B  B2B E-commerce",
-  description: "This is Error Page for B2B  Template",
+  title: "Error Page | Business to Business E-commerce",
+  description: "Something went wrong. Return to the homepage or contact our team if you are having issues accessing your wholesale order portal.",
   // other metadata
 };
 

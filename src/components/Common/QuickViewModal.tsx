@@ -339,10 +339,10 @@ const QuickViewModal = () => {
 
                   <span className="flex items-center gap-2">
                     <span className="font-semibold text-dark text-xl xl:text-heading-4">
-                      ${Number(product.discountedPrice).toFixed(2)}
+                      £{Number(product.discountedPrice).toFixed(2)}
                     </span>
                     <span className="font-medium text-dark-4 text-lg xl:text-2xl line-through">
-                      ${Number(product.price).toFixed(2)}
+                      £{Number(product.price).toFixed(2)}
                     </span>
                   </span>
                 </div>

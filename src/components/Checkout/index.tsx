@@ -54,7 +54,7 @@ const Checkout = () => {
   useKYCProtection({
     level: 'kyc-approved',
     redirectTo: '/b2b/application-status',
-    toastMessage: 'You must have an approved B2B account to checkout'
+    toastMessage: 'You must have an approved Business to Business account to checkout'
   });
 
   useEffect(() => {
@@ -194,7 +194,7 @@ const Checkout = () => {
                   <div className="p-4 sm:p-8.5 pb-0">
                     <h4 className="font-bold text-dark text-xl mb-6">Order Summary</h4>
 
-                    {cartItems.map((item: any) => (
+                     {cartItems.map((item: any) => (
                       <div key={item.id} className="flex items-center justify-between py-4 border-b border-gray-3">
                         <div>
                           <p className="text-dark font-medium">{item.product_title}</p>
@@ -203,7 +203,7 @@ const Checkout = () => {
                           </p>
                         </div>
                         <div>
-                          <p className="text-dark text-right">${item.subtotal.toFixed(2)}</p>
+                          <p className="text-dark text-right">£{item.subtotal.toFixed(2)}</p>
                         </div>
                       </div>
                     ))}
@@ -213,7 +213,7 @@ const Checkout = () => {
                         <p className="text-dark">Subtotal</p>
                       </div>
                       <div>
-                        <p className="text-dark text-right">${subtotal.toFixed(2)}</p>
+                        <p className="text-dark text-right">£{subtotal.toFixed(2)}</p>
                       </div>
                     </div>
 
@@ -223,7 +223,7 @@ const Checkout = () => {
                           <p className="text-dark">Discount (-)</p>
                         </div>
                         <div>
-                          <p className="text-dark text-right">-${discountAmount.toFixed(2)}</p>
+                          <p className="text-dark text-right">-£{discountAmount.toFixed(2)}</p>
                         </div>
                       </div>
                     )}
@@ -233,7 +233,7 @@ const Checkout = () => {
                         <p className="text-dark">Shipping Fee</p>
                       </div>
                       <div>
-                        <p className="text-dark text-right">${deliveryFee.toFixed(2)}</p>
+                        <p className="text-dark text-right">£{deliveryFee.toFixed(2)}</p>
                       </div>
                     </div>
 
@@ -244,7 +244,7 @@ const Checkout = () => {
                       </div>
                       <div>
                         <p className="font-medium text-lg text-dark text-right">
-                          ${totalPrice.toFixed(2)}
+                          £{totalPrice.toFixed(2)}
                         </p>
                       </div>
                     </div>

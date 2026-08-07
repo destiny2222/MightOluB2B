@@ -5,8 +5,8 @@ import { ToastContainer } from "react-toastify";
 
 import { Metadata } from "next";
 export const metadata: Metadata = {
-  title: "My Account | B2B  B2B E-commerce",
-  description: "This is My Account page for B2B  Template",
+  title: "My Account | Business to Business E-commerce",
+  description: "Manage your wholesale profile, configure corporate billing and shipping details, add authorized buyers, check KYC status, and track purchase orders.",
   // other metadata
 };
 
