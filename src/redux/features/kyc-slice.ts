@@ -25,7 +25,7 @@ const initialState: KYCState = {
 // Submit KYC
 export const submitKYCApplication = createAsyncThunk(
   'kyc/submit',
-  async (data: B2BAPI.KYCData, { rejectWithValue }) => {
+  async (data: B2BAPI.KYCData | FormData, { rejectWithValue }) => {
     try {
       const response = await B2BAPI.submitKYC(data);
       return response;
@@ -38,7 +38,7 @@ export const submitKYCApplication = createAsyncThunk(
 // Resubmit KYC
 export const resubmitKYCApplication = createAsyncThunk(
   'kyc/resubmit',
-  async (data: B2BAPI.KYCData, { rejectWithValue }) => {
+  async (data: B2BAPI.KYCData | FormData, { rejectWithValue }) => {
     try {
       const response = await B2BAPI.resubmitKYC(data);
       return response;
@@ -143,7 +143,7 @@ const kycSlice = createSlice({
       })
       .addCase(submitKYCApplication.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.kyc = action.payload.kyc;
+        state.kyc = action.payload.data || action.payload.kyc || null;
         state.successMessage = action.payload.message;
       })
       .addCase(submitKYCApplication.rejected, (state, action) => {
@@ -162,7 +162,7 @@ const kycSlice = createSlice({
       })
       .addCase(resubmitKYCApplication.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.kyc = action.payload.kyc;
+        state.kyc = action.payload.kyc || action.payload.data || null;
         state.successMessage = action.payload.message;
       })
       .addCase(resubmitKYCApplication.rejected, (state, action) => {
